@@ -1,0 +1,239 @@
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from app.models.inventario_model import Producto, MovimientoInventario
+from app import db
+from datetime import datetime
+from sqlalchemy import or_
+
+inventario_bp = Blueprint('inventario', __name__, url_prefix='/inventario')
+
+@inventario_bp.route('/')
+def listar_inventario():
+    if 'user_id' not in session:
+        flash('Debes iniciar sesión primero.', 'warning')
+        return redirect(url_for('auth.login'))
+    
+    search = request.args.get('search', '')
+    estado = request.args.get('estado', '')
+    categoria = request.args.get('categoria', '')
+    
+    query = Producto.query
+    
+    if search:
+        query = query.filter(
+            or_(
+                Producto.codigo.like(f'%{search}%'),
+                Producto.nombre.like(f'%{search}%'),
+                Producto.descripcion.like(f'%{search}%')
+            )
+        )
+    
+    if estado:
+        query = query.filter_by(estado=estado)
+    
+    if categoria:
+        query = query.filter_by(categoria=categoria)
+    
+    productos = query.order_by(Producto.nombre).all()
+    
+    total_productos = Producto.query.count()
+    stock_bajo = Producto.query.filter(Producto.cantidad <= 10, Producto.cantidad > 5).count()
+    stock_critico = Producto.query.filter(Producto.cantidad <= 5).count()
+    
+    categorias = db.session.query(Producto.categoria).distinct().all()
+    categorias = [c[0] for c in categorias if c[0]]
+    
+    return render_template('inventario/listar.html',
+                         productos=productos,
+                         total_productos=total_productos,
+                         stock_bajo=stock_bajo,
+                         stock_critico=stock_critico,
+                         categorias=categorias,
+                         search=search,
+                         estado_filtro=estado,
+                         categoria_filtro=categoria)
+
+@inventario_bp.route('/nuevo', methods=['GET', 'POST'])
+def nuevo_producto():
+    if 'user_id' not in session:
+        flash('Debes iniciar sesión primero.', 'warning')
+        return redirect(url_for('auth.login'))
+    
+    if request.method == 'POST':
+        try:
+            codigo = request.form.get('codigo')
+            nombre = request.form.get('nombre')
+            descripcion = request.form.get('descripcion')
+            serial = request.form.get('serial')
+            costo_unitario = float(request.form.get('costo_unitario', 0))
+            cantidad = int(request.form.get('cantidad', 0))
+            estado = request.form.get('estado', 'disponible')
+            categoria = request.form.get('categoria', '')
+            
+            if not all([codigo, nombre]):
+                flash('Código y nombre son obligatorios.', 'danger')
+                return redirect(url_for('inventario.nuevo_producto'))
+            
+            existe = Producto.query.filter_by(codigo=codigo).first()
+            if existe:
+                flash('El código de producto ya existe.', 'warning')
+                return redirect(url_for('inventario.nuevo_producto'))
+            
+            nuevo_producto = Producto(
+                codigo=codigo,
+                nombre=nombre,
+                descripcion=descripcion,
+                serial=serial,
+                costo_unitario=costo_unitario,
+                cantidad=cantidad,
+                estado=estado,
+                categoria=categoria
+            )
+            
+            db.session.add(nuevo_producto)
+            db.session.flush()
+            
+            if cantidad > 0:
+                movimiento = MovimientoInventario(
+                    producto_id=nuevo_producto.id,
+                    tipo='entrada',
+                    cantidad=cantidad,
+                    cantidad_anterior=0,
+                    cantidad_nueva=cantidad,
+                    motivo='Ingreso inicial',
+                    usuario=session.get('username')
+                )
+                db.session.add(movimiento)
+            
+            db.session.commit()
+            
+            flash(f'Producto {codigo} registrado exitosamente.', 'success')
+            return redirect(url_for('inventario.listar_inventario'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error al registrar producto: {str(e)}', 'danger')
+            return redirect(url_for('inventario.nuevo_producto'))
+    
+    return render_template('inventario/nuevo.html')
+
+@inventario_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
+def editar_producto(id):
+    if 'user_id' not in session:
+        flash('Debes iniciar sesión primero.', 'warning')
+        return redirect(url_for('auth.login'))
+    
+    producto = Producto.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        try:
+            cantidad_anterior = producto.cantidad
+            
+            producto.nombre = request.form.get('nombre')
+            producto.descripcion = request.form.get('descripcion')
+            producto.serial = request.form.get('serial')
+            producto.costo_unitario = float(request.form.get('costo_unitario'))
+            producto.cantidad = int(request.form.get('cantidad'))
+            producto.estado = request.form.get('estado')
+            producto.categoria = request.form.get('categoria')
+            
+            if cantidad_anterior != producto.cantidad:
+                cantidad_cambio = abs(producto.cantidad - cantidad_anterior)
+                
+                movimiento = MovimientoInventario(
+                    producto_id=producto.id,
+                    tipo='ajuste',
+                    cantidad=cantidad_cambio,
+                    cantidad_anterior=cantidad_anterior,
+                    cantidad_nueva=producto.cantidad,
+                    motivo='Ajuste manual',
+                    usuario=session.get('username')
+                )
+                db.session.add(movimiento)
+            
+            db.session.commit()
+            flash('Producto actualizado exitosamente.', 'success')
+            return redirect(url_for('inventario.listar_inventario'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error al actualizar: {str(e)}', 'danger')
+    
+    return render_template('inventario/editar.html', producto=producto)
+
+@inventario_bp.route('/detalle/<int:id>')
+def detalle_producto(id):
+    if 'user_id' not in session:
+        flash('Debes iniciar sesión primero.', 'warning')
+        return redirect(url_for('auth.login'))
+    
+    producto = Producto.query.get_or_404(id)
+    movimientos = MovimientoInventario.query.filter_by(producto_id=id).order_by(MovimientoInventario.fecha.desc()).limit(20).all()
+    
+    return render_template('inventario/detalle.html', producto=producto, movimientos=movimientos)
+
+@inventario_bp.route('/eliminar/<int:id>', methods=['POST'])
+def eliminar_producto(id):
+    if 'user_id' not in session:
+        flash('Debes iniciar sesión primero.', 'warning')
+        return redirect(url_for('auth.login'))
+    
+    try:
+        producto = Producto.query.get_or_404(id)
+        
+        tiene_ventas = False
+        tiene_compras = False
+        tiene_movimientos = False
+        
+        try:
+            from app.models.venta_model import DetalleVenta
+            tiene_ventas = DetalleVenta.query.filter_by(producto_id=id).first() is not None
+        except:
+            pass
+        
+        try:
+            from app.models.compra_model import DetalleCompra
+            tiene_compras = DetalleCompra.query.filter_by(producto_id=id).first() is not None
+        except:
+            pass
+        
+        tiene_movimientos = MovimientoInventario.query.filter_by(producto_id=id).first() is not None
+        
+        if tiene_ventas or tiene_compras or tiene_movimientos:
+            producto.estado = 'inactivo'
+            db.session.commit()
+            flash(f'No se puede eliminar "{producto.nombre}". Se ha marcado como INACTIVO.', 'warning')
+            return redirect(url_for('inventario.listar_inventario'))
+        
+        nombre_producto = producto.nombre
+        db.session.delete(producto)
+        db.session.commit()
+        
+        flash(f'Producto "{nombre_producto}" eliminado exitosamente.', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al eliminar: {str(e)}', 'danger')
+    
+    return redirect(url_for('inventario.listar_inventario'))
+
+@inventario_bp.route('/movimientos')
+def historial_movimientos():
+    if 'user_id' not in session:
+        flash('Debes iniciar sesión primero.', 'warning')
+        return redirect(url_for('auth.login'))
+    
+    movimientos = MovimientoInventario.query.order_by(MovimientoInventario.fecha.desc()).limit(100).all()
+    
+    return render_template('inventario/movimientos.html', movimientos=movimientos)
+
+@inventario_bp.route('/reporte', methods=['GET'])
+def reporte_inventario():
+    if 'user_id' not in session:
+        flash('Debes iniciar sesión primero.', 'warning')
+        return redirect(url_for('auth.login'))
+    
+    productos = Producto.query.all()
+    total_productos = len(productos)
+    total_stock = sum(p.cantidad for p in productos)
+    
+    return render_template('inventario/reporte.html', productos=productos, total_productos=total_productos, total_stock=total_stock)

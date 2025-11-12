@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-10">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2>👁️ Detalle de Orden</h2>
+          <p class="text-muted">Orden: <strong>{{ orden.numero_orden }}</strong></p>
+        </div>
+        <div>
+          <a href="{{ url_for('ordenes.listar_ordenes') }}" class="btn btn-secondary me-2">← Volver</a>
+          <a href="{{ url_for('ordenes.generar_pdf', id=orden.id) }}" class="btn btn-success">📥 Descargar PDF</a>
+        </div>
+      </div>
+
+      <!-- Estado Actual -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header {% if orden.estado == 'pendiente' %}bg-warning{% elif orden.estado == 'aprobada' %}bg-info{% elif orden.estado == 'completada' %}bg-success{% else %}bg-danger{% endif %} text-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Estado: {{ orden.estado.upper() }}</h5>
+            <form method="POST" action="{{ url_for('ordenes.cambiar_estado', id=orden.id) }}" class="d-flex align-items-center" style="gap: 10px;">
+              <select class="form-select form-select-sm" name="estado" style="width: auto;">
+                <option value="pendiente" {% if orden.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                <option value="aprobada" {% if orden.estado == 'aprobada' %}selected{% endif %}>Aprobada</option>
+                <option value="completada" {% if orden.estado == 'completada' %}selected{% endif %}>Completada</option>
+                <option value="cancelada" {% if orden.estado == 'cancelada' %}selected{% endif %}>Cancelada</option>
+              </select>
+              <button type="submit" class="btn btn-sm btn-light">Actualizar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información General -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">📋 Información General</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="text-muted small">Número de Orden</label>
+              <h4>{{ orden.numero_orden }}</h4>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="text-muted small">Fecha de Emisión</label>
+              <h4>{{ orden.fecha.strftime('%d/%m/%Y') }}</h4>
+            </div>
+            <div class="col-md-12 mb-3">
+              <label class="text-muted small">Proveedor</label>
+              <h5>{{ orden.proveedor }}</h5>
+              {% if orden.direccion_proveedor %}
+              <small class="text-muted">📍 {{ orden.direccion_proveedor }}</small><br>
+              {% endif %}
+              {% if orden.telefono_proveedor %}
+              <small class="text-muted">📞 {{ orden.telefono_proveedor }}</small>
+              {% endif %}
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="text-muted small">Elaborado por</label>
+              <h5><span class="badge bg-secondary">{{ orden.elaborado_por }}</span></h5>
+            </div>
+            {% if orden.verificado_por %}
+            <div class="col-md-6 mb-3">
+              <label class="text-muted small">Verificado por</label>
+              <h5><span class="badge bg-success">{{ orden.verificado_por }}</span></h5>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Productos -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0">📦 Detalle de Productos</h5>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-bordered mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Descripción</th>
+                  <th class="text-center">Cantidad</th>
+                  <th class="text-center">Unidad</th>
+                  <th class="text-end">Precio Unit.</th>
+                  <th class="text-end">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for detalle in orden.detalles %}
+                <tr>
+                  <td><strong>{{ detalle.producto_descripcion }}</strong></td>
+                  <td class="text-center">{{ detalle.cantidad }}</td>
+                  <td class="text-center">{{ detalle.unidad_medida }}</td>
+                  <td class="text-end">${{ "{:,.2f}".format(detalle.precio_unitario) }}</td>
+                  <td class="text-end"><strong>${{ "{:,.2f}".format(detalle.subtotal) }}</strong></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Totales -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">💰 Resumen Financiero</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="alert alert-light text-center">
+                <label class="text-muted small">Subtotal</label>
+                <h3>${{ "{:,.2f}".format(orden.subtotal) }}</h3>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="alert alert-warning text-center">
+                <label class="text-muted small">IVA</label>
+                <h3>${{ "{:,.2f}".format(orden.iva) }}</h3>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="alert alert-success text-center">
+                <label class="text-muted small">Total</label>
+                <h2 class="text-success">${{ "{:,.2f}".format(orden.total) }}</h2>
+              </div>
+            </div>
+          </div>
+          {% if orden.descuento > 0 %}
+          <div class="alert alert-info text-center">
+            <strong>Descuento Aplicado:</strong> ${{ "{:,.2f}".format(orden.descuento) }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Observaciones -->
+      {% if orden.observaciones %}
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-secondary text-white">
+          <h5 class="mb-0">📝 Observaciones</h5>
+        </div>
+        <div class="card-body">
+          <p class="mb-0">{{ orden.observaciones }}</p>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Acciones -->
+      <div class="text-center mb-5">
+        <form method="POST" action="{{ url_for('ordenes.eliminar_orden', id=orden.id) }}" style="display:inline;" onsubmit="return confirm('¿Está seguro de eliminar esta orden?');">
+          <button type="submit" class="btn btn-danger btn-lg">🗑️ Eliminar Orden</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

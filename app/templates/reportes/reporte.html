@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2>📋 Reporte de Órdenes</h2>
+  <p>Total de órdenes: <strong>{{ total_ordenes }}</strong></p>
+  <p>Total acumulado: <strong>${{ total_monto }}</strong></p>
+
+  <table class="table table-striped mt-3">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Cliente</th>
+        <th>Fecha</th>
+        <th>Estado</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in ordenes %}
+      <tr>
+        <td>{{ o.id }}</td>
+        <td>{{ o.cliente.nombre if o.cliente else 'N/A' }}</td>
+        <td>{{ o.fecha|date("%d/%m/%Y %H:%M") }}</td>
+        <td>{{ o.estado }}</td>
+        <td>${{ o.total if o.total else 0 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

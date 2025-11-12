@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2>📊 Panel Principal</h2>
+  <p class="text-muted">Resumen general de la plataforma</p>
+
+  <!-- Tarjetas de resumen -->
+  <div class="row text-center mt-4">
+    <div class="col-md-3">
+      <div class="card shadow-sm p-3 border-primary">
+        <h4>👤 Usuarios</h4>
+        <h2 class="text-primary">{{ total_users }}</h2>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card shadow-sm p-3 border-info">
+        <h4>🧾 Compras</h4>
+        <h2 class="text-info">{{ total_compras }}</h2>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card shadow-sm p-3 border-success">
+        <h4>💲 Ventas</h4>
+        <h2 class="text-success">{{ total_ventas }}</h2>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card shadow-sm p-3 border-warning">
+        <h4>📦 Productos</h4>
+        <h2 class="text-warning">{{ total_productos }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alertas -->
+  <div class="row mt-4">
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-danger text-white">
+          <h5 class="mb-0">⚠️ Alertas</h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-group list-group-flush">
+            {% if stock_critico > 0 %}
+            <li class="list-group-item list-group-item-danger">
+              <strong>{{ stock_critico }}</strong> productos con stock crítico
+              <a href="{{ url_for('inventario.listar_inventario') }}" class="float-end btn btn-sm btn-danger">Ver</a>
+            </li>
+            {% endif %}
+            {% if ordenes_pendientes > 0 %}
+            <li class="list-group-item list-group-item-warning">
+              <strong>{{ ordenes_pendientes }}</strong> órdenes pendientes de aprobar
+              <a href="{{ url_for('ordenes.listar_ordenes') }}" class="float-end btn btn-sm btn-warning">Ver</a>
+            </li>
+            {% endif %}
+            {% if stock_critico == 0 and ordenes_pendientes == 0 %}
+            <li class="list-group-item list-group-item-success">
+              ✅ No hay alertas pendientes
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accesos rápidos -->
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">🚀 Accesos Rápidos</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <a href="{{ url_for('compras.nueva_compra') }}" class="btn btn-primary">🧾 Nueva Compra</a>
+            <a href="{{ url_for('ventas.nueva_venta') }}" class="btn btn-success">💲 Nueva Venta</a>
+            <a href="{{ url_for('inventario.nuevo_producto') }}" class="btn btn-warning">📦 Nuevo Producto</a>
+            <a href="{{ url_for('ordenes.nueva_orden') }}" class="btn btn-info">📑 Nueva Orden</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

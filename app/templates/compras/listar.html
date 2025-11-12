@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2>🧾 Gestión de Compras</h2>
+      <p class="text-muted">Administra y controla todas las compras realizadas</p>
+    </div>
+    <a href="{{ url_for('compras.nueva_compra') }}" class="btn btn-success btn-lg">
+      ➕ Nueva Compra
+    </a>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="card shadow-sm border-primary">
+        <div class="card-body text-center">
+          <h5 class="card-title text-primary">Total Compras</h5>
+          <h2 class="display-4">{{ compras|length }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card shadow-sm border-success">
+        <div class="card-body text-center">
+          <h5 class="card-title text-success">Monto Total</h5>
+          <h2 class="display-4">${{ "{:,.2f}".format(total_compras) }}</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-light">
+      <h5 class="mb-0">🔍 Filtros de Búsqueda</h5>
+    </div>
+    <div class="card-body">
+      <form method="GET" action="{{ url_for('compras.listar_compras') }}">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Buscar</label>
+            <input type="text" name="search" class="form-control" placeholder="Proveedor, factura o producto" value="{{ search }}">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Tipo de Compra</label>
+            <select name="tipo_compra" class="form-select">
+              <option value="">Todos</option>
+              <option value="Nacional" {% if tipo_compra == 'Nacional' %}selected{% endif %}>Nacional</option>
+              <option value="Internacional" {% if tipo_compra == 'Internacional' %}selected{% endif %}>Internacional</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Desde</label>
+            <input type="date" name="fecha_desde" class="form-control" value="{{ fecha_desde }}">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Hasta</label>
+            <input type="date" name="fecha_hasta" class="form-control" value="{{ fecha_hasta }}">
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary me-2">🔎 Buscar</button>
+            <a href="{{ url_for('compras.listar_compras') }}" class="btn btn-secondary">🔄 Limpiar</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">📋 Lista de Compras</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-striped mb-0">
+          <thead class="table-dark">
+            <tr>
+              <th>#</th>
+              <th>Fecha</th>
+              <th>Proveedor</th>
+              <th>N° Factura</th>
+              <th>Tipo</th>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Total</th>
+              <th>Documento</th>
+              <th class="text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if compras %}
+              {% for compra in compras %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ compra.fecha.strftime('%d/%m/%Y') }}</td>
+                <td><strong>{{ compra.proveedor }}</strong></td>
+                <td><span class="badge bg-info">{{ compra.numero_factura }}</span></td>
+                <td>
+                  {% if compra.tipo_compra == 'Nacional' %}
+                    <span class="badge bg-success">Nacional</span>
+                  {% else %}
+                    <span class="badge bg-warning text-dark">Internacional</span>
+                  {% endif %}
+                </td>
+                <td>{{ compra.producto }}</td>
+                <td class="text-center">{{ compra.cantidad }}</td>
+                <td><strong class="text-success">${{ "{:,.2f}".format(compra.total) }}</strong></td>
+                <td class="text-center">
+                  {% if compra.documento %}
+                    <a href="{{ url_for('static', filename='uploads/facturas/' + compra.documento) }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Ver documento">📄</a>
+                  {% else %}
+                    <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td class="text-center">
+                  <div class="btn-group" role="group">
+                    <a href="{{ url_for('compras.detalle_compra', id=compra.id) }}" class="btn btn-sm btn-info" title="Ver detalle">👁️</a>
+                    <a href="{{ url_for('compras.editar_compra', id=compra.id) }}" class="btn btn-sm btn-warning" title="Editar">✏️</a>
+                    <a href="{{ url_for('compras.generar_pdf', id=compra.id) }}" class="btn btn-sm btn-secondary" title="Descargar PDF">📥</a>
+                    <form method="POST" action="{{ url_for('compras.eliminar_compra', id=compra.id) }}" style="display:inline;" onsubmit="return confirm('¿Estás seguro de eliminar esta compra?');">
+                      <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">🗑️</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="10" class="text-center py-4">
+                  <div class="alert alert-info mb-0">
+                    <strong>ℹ️ No hay compras registradas</strong><br>
+                    <a href="{{ url_for('compras.nueva_compra') }}" class="alert-link">Registra tu primera compra aquí</a>
+                  </div>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2>📦 Reporte de Inventario</h2>
+  <p>Total de productos: <strong>{{ total_productos }}</strong></p>
+  <p>Stock total: <strong>{{ total_stock }}</strong></p>
+
+  <table class="table table-striped mt-3">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Categoría</th>
+        <th>Cantidad</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in productos %}
+      <tr>
+        <td>{{ p.id }}</td>
+        <td>{{ p.nombre }}</td>
+        <td>{{ p.categoria if p.categoria else 'N/A' }}</td>
+        <td>{{ p.cantidad }}</td>
+        <td>{{ p.estado }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

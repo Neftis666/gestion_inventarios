@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Reporte de Ventas{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">📊 Reporte de Ventas</h2>
+    <hr>
+
+    <p><strong>Total de ventas:</strong> {{ total_ventas }}</p>
+    <p><strong>Monto total:</strong> ${{ "{:,.2f}".format(total_monto) }}</p>
+
+    <table class="table table-striped table-hover mt-4">
+        <thead class="table-success">
+            <tr>
+                <th>N° Factura</th>
+                <th>Cliente</th>
+                <th>Fecha</th>
+                <th>Total</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for venta in ventas %}
+            <tr>
+                <td>{{ venta.numero_factura }}</td>
+                <td>{{ venta.cliente.nombre }}</td>
+                <td>{{ venta.fecha|date("%d/%m/%Y %H:%M") }}</td>
+                <td>${{ "{:,.2f}".format(venta.total) }}</td>
+                <td>{{ venta.estado }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="text-center text-muted">No hay registros de ventas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ url_for('reportes.dashboard_reportes') }}" class="btn btn-secondary mt-3">Volver</a>
+</div>
+{% endblock %}

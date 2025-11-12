@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid mt-4">
+
+  <!-- Encabezado -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2>📊 Centro de Reportes</h2>
+      <p class="text-muted">Análisis consolidado de toda la empresa</p>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <!-- Reportes Disponibles -->
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">📈 Reportes Disponibles</h5>
+        </div>
+        <div class="card-body">
+          <div class="list-group">
+
+            <!-- Reporte de Compras -->
+            <a href="{{ url_for('compras.reporte_compras') }}" class="list-group-item list-group-item-action">
+              <h5 class="mb-1">🧾 Reporte de Compras</h5>
+              <p class="mb-1 text-muted">Consulta compras por proveedor, rango de fechas o tipo</p>
+            </a>
+
+            <!-- Reporte de Ventas -->
+            <a href="{{ url_for('ventas.reporte_ventas') }}" class="list-group-item list-group-item-action">
+              <h5 class="mb-1">💲 Reporte de Ventas</h5>
+              <p class="mb-1 text-muted">Visualiza ventas por cliente, fechas o estado</p>
+            </a>
+
+            <!-- Reporte de Inventario -->
+            <a href="{{ url_for('inventario.reporte_inventario') }}" class="list-group-item list-group-item-action">
+              <h5 class="mb-1">📦 Reporte de Inventario</h5>
+              <p class="mb-1 text-muted">Revisa existencias, stock crítico y movimientos</p>
+            </a>
+
+            <!-- Reporte de Órdenes -->
+            <a href="{{ url_for('ordenes.reporte_ordenes') }}" class="list-group-item list-group-item-action">
+              <h5 class="mb-1">📑 Reporte de Órdenes de Compra</h5>
+              <p class="mb-1 text-muted">Control y seguimiento de órdenes emitidas</p>
+            </a>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel informativo -->
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">ℹ️ Información General</h5>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-light border">
+            <h4 class="text-primary">📌 Módulo de Reportes Activo</h4>
+            <p>Puedes generar reportes detallados y descargar en PDF o Excel desde cada módulo.</p>
+            <hr>
+            <ul class="mt-3">
+              <li><strong>🧾 Compras:</strong> Reporte de proveedores, montos y documentos.</li>
+              <li><strong>💲 Ventas:</strong> Reporte de clientes, totales y facturas.</li>
+              <li><strong>📦 Inventario:</strong> Reporte de stock, alertas y productos críticos.</li>
+              <li><strong>📑 Órdenes:</strong> Reporte de órdenes pendientes, aprobadas o completadas.</li>
+            </ul>
+            <hr>
+            <p class="text-muted small">📅 Última actualización: {{ "now"|date("%d/%m/%Y %H:%M") }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

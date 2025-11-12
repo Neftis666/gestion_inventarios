@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2>📦 Gestión de Inventario</h2>
+      <p class="text-muted">Control de productos y stock</p>
+    </div>
+    <a href="{{ url_for('inventario.nuevo_producto') }}" class="btn btn-success btn-lg">
+      ➕ Agregar Producto
+    </a>
+  </div>
+
+  <!-- Tarjetas de Estadísticas -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm border-primary">
+        <div class="card-body text-center">
+          <h5 class="card-title text-primary">Total Productos</h5>
+          <h2 class="display-4">{{ total_productos }}</h2>
+          <small class="text-muted">Productos registrados</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-warning">
+        <div class="card-body text-center">
+          <h5 class="card-title text-warning">Stock Bajo</h5>
+          <h2 class="display-4">{{ stock_bajo }}</h2>
+          <small class="text-muted">≤ 10 unidades</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-danger">
+        <div class="card-body text-center">
+          <h5 class="card-title text-danger">Stock Crítico</h5>
+          <h2 class="display-4">{{ stock_critico }}</h2>
+          <small class="text-muted">≤ 5 unidades</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-light">
+      <h5 class="mb-0">🔍 Filtros de Búsqueda</h5>
+    </div>
+    <div class="card-body">
+      <form method="GET" action="{{ url_for('inventario.listar_inventario') }}">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Buscar</label>
+            <input type="text" name="search" class="form-control" placeholder="Código, nombre o descripción" value="{{ search }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Estado</label>
+            <select name="estado" class="form-select">
+              <option value="">Todos</option>
+              <option value="disponible" {% if estado_filtro == 'disponible' %}selected{% endif %}>Disponible</option>
+              <option value="prestado" {% if estado_filtro == 'prestado' %}selected{% endif %}>Prestado</option>
+              <option value="dañado" {% if estado_filtro == 'dañado' %}selected{% endif %}>Dañado</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Categoría</label>
+            <select name="categoria" class="form-select">
+              <option value="">Todas</option>
+              {% for cat in categorias %}
+              <option value="{{ cat }}" {% if categoria_filtro == cat %}selected{% endif %}>{{ cat }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary me-2">🔎 Buscar</button>
+            <a href="{{ url_for('inventario.listar_inventario') }}" class="btn btn-secondary">🔄</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tabla de Productos -->
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">📋 Lista de Productos</h5>
+      <a href="{{ url_for('inventario.historial_movimientos') }}" class="btn btn-sm btn-light">📊 Ver Movimientos</a>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-striped mb-0">
+          <thead class="table-dark">
+            <tr>
+              <th>Código</th>
+              <th>Nombre</th>
+              <th>Categoría</th>
+              <th class="text-center">Cantidad</th>
+              <th class="text-center">Stock</th>
+              <th>Costo Unitario</th>
+              <th>Estado</th>
+              <th class="text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if productos %}
+              {% for producto in productos %}
+              <tr>
+                <td><strong>{{ producto.codigo }}</strong></td>
+                <td>{{ producto.nombre }}</td>
+                <td><span class="badge bg-secondary">{{ producto.categoria or 'Sin categoría' }}</span></td>
+                <td class="text-center">
+                  <strong>{{ producto.cantidad }}</strong>
+                </td>
+                <td class="text-center">
+                  {% if producto.nivel_stock == 'suficiente' %}
+                    <span class="badge bg-success">✓ Suficiente</span>
+                  {% elif producto.nivel_stock == 'bajo' %}
+                    <span class="badge bg-warning">⚠ Bajo</span>
+                  {% else %}
+                    <span class="badge bg-danger">⚠ Crítico</span>
+                  {% endif %}
+                </td>
+                <td>${{ "{:,.2f}".format(producto.costo_unitario) }}</td>
+                <td>
+                  {% if producto.estado == 'disponible' %}
+                    <span class="badge bg-success">Disponible</span>
+                  {% elif producto.estado == 'prestado' %}
+                    <span class="badge bg-warning">Prestado</span>
+                  {% else %}
+                    <span class="badge bg-danger">Dañado</span>
+                  {% endif %}
+                </td>
+                <td class="text-center">
+                  <div class="btn-group" role="group">
+                    <a href="{{ url_for('inventario.detalle_producto', id=producto.id) }}" class="btn btn-sm btn-info" title="Ver detalle">👁️</a>
+                    <a href="{{ url_for('inventario.editar_producto', id=producto.id) }}" class="btn btn-sm btn-warning" title="Editar">✏️</a>
+                    <form method="POST" action="{{ url_for('inventario.eliminar_producto', id=producto.id) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar este producto?');">
+                      <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">🗑️</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="8" class="text-center py-4">
+                  <div class="alert alert-info mb-0">
+                    <strong>ℹ️ No hay productos registrados</strong><br>
+                    <a href="{{ url_for('inventario.nuevo_producto') }}" class="alert-link">Registra tu primer producto aquí</a>
+                  </div>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-10">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2>👁️ Detalle del Producto</h2>
+          <p class="text-muted">Información completa y movimientos</p>
+        </div>
+        <div>
+          <a href="{{ url_for('inventario.listar_inventario') }}" class="btn btn-secondary me-2">← Volver</a>
+          <a href="{{ url_for('inventario.editar_producto', id=producto.id) }}" class="btn btn-warning">✏️ Editar</a>
+        </div>
+      </div>
+
+      <!-- Información del Producto -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">📦 Información del Producto</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="text-muted small">Código</label>
+              <h4>{{ producto.codigo }}</h4>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="text-muted small">Nombre</label>
+              <h4>{{ producto.nombre }}</h4>
+            </div>
+            <div class="col-md-12 mb-3">
+              <label class="text-muted small">Descripción</label>
+              <p>{{ producto.descripcion or 'Sin descripción' }}</p>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="text-muted small">Categoría</label>
+              <h5><span class="badge bg-secondary">{{ producto.categoria or 'Sin categoría' }}</span></h5>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="text-muted small">Serial</label>
+              <h5>{{ producto.serial or 'N/A' }}</h5>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="text-muted small">Estado</label>
+              <h5>
+                {% if producto.estado == 'disponible' %}
+                  <span class="badge bg-success">Disponible</span>
+                {% elif producto.estado == 'prestado' %}
+                  <span class="badge bg-warning">Prestado</span>
+                {% else %}
+                  <span class="badge bg-danger">Dañado</span>
+                {% endif %}
+              </h5>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stock y Valores -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0">💰 Stock y Valores</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="alert alert-light text-center">
+                <label class="text-muted small">Cantidad en Stock</label>
+                <h2>{{ producto.cantidad }}</h2>
+                {% if producto.nivel_stock == 'suficiente' %}
+                  <span class="badge bg-success">✓ Stock Suficiente</span>
+                {% elif producto.nivel_stock == 'bajo' %}
+                  <span class="badge bg-warning">⚠ Stock Bajo</span>
+                {% else %}
+                  <span class="badge bg-danger">⚠ Stock Crítico</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="alert alert-info text-center">
+                <label class="text-muted small">Costo Unitario</label>
+                <h2>${{ "{:,.2f}".format(producto.costo_unitario) }}</h2>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="alert alert-success text-center">
+                <label class="text-muted small">Valor Total en Stock</label>
+                <h2>${{ "{:,.2f}".format(producto.cantidad * producto.costo_unitario) }}</h2>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Historial de Movimientos -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">📊 Historial de Movimientos (Últimos 20)</h5>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-striped mb-0">
+              <thead class="table-dark">
+                <tr>
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th>Cantidad</th>
+                  <th>Anterior</th>
+                  <th>Nueva</th>
+                  <th>Motivo</th>
+                  <th>Usuario</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% if movimientos %}
+                  {% for mov in movimientos %}
+                  <tr>
+                    <td>{{ mov.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>
+                      {% if mov.tipo == 'entrada' %}
+                        <span class="badge bg-success">Entrada</span>
+                      {% elif mov.tipo == 'salida' %}
+                        <span class="badge bg-danger">Salida</span>
+                      {% else %}
+                        <span class="badge bg-warning">Ajuste</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ mov.cantidad }}</td>
+                    <td>{{ mov.cantidad_anterior }}</td>
+                    <td><strong>{{ mov.cantidad_nueva }}</strong></td>
+                    <td>{{ mov.motivo }}</td>
+                    <td>{{ mov.usuario }}</td>
+                  </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr>
+                    <td colspan="7" class="text-center py-3">
+                      <em class="text-muted">No hay movimientos registrados</em>
+                    </td>
+                  </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

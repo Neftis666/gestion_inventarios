@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-11">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2>➕ Nueva Venta</h2>
+          <p class="text-muted">Registra una nueva venta</p>
+        </div>
+        <a href="{{ url_for('ventas.listar_ventas') }}" class="btn btn-secondary">← Volver</a>
+      </div>
+
+      <form method="POST" action="{{ url_for('ventas.nueva_venta') }}" id="formVenta">
+        <!-- Cliente -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">👤 Cliente</h5>
+            <a href="{{ url_for('ventas.nuevo_cliente') }}" class="btn btn-sm btn-light" target="_blank">➕ Nuevo Cliente</a>
+          </div>
+          <div class="card-body">
+            <select class="form-select" id="cliente_id" name="cliente_id" required>
+              <option value="">Seleccionar cliente...</option>
+              {% for cliente in clientes %}
+              <option value="{{ cliente.id }}">{{ cliente.nombre }} - {{ cliente.documento }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- Productos -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-success text-white">
+            <h5 class="mb-0">📦 Productos</h5>
+          </div>
+          <div class="card-body">
+            <table class="table table-bordered" id="tablaProductos">
+              <thead class="table-light">
+                <tr>
+                  <th>Producto</th>
+                  <th style="width: 120px;">Cantidad</th>
+                  <th style="width: 150px;">Precio Unit.</th>
+                  <th style="width: 150px;">Subtotal</th>
+                  <th style="width: 80px;">Acción</th>
+                </tr>
+              </thead>
+              <tbody id="productosBody">
+                <tr class="producto-row">
+                  <td>
+                    <select class="form-select producto-select" name="producto_id[]" required onchange="actualizarPrecio(this)">
+                      <option value="">Seleccionar...</option>
+                      {% for producto in productos %}
+                      <option value="{{ producto.id }}" data-precio="{{ producto.costo_unitario }}" data-stock="{{ producto.cantidad }}">
+                        {{ producto.nombre }} (Stock: {{ producto.cantidad }})
+                      </option>
+                      {% endfor %}
+                    </select>
+                  </td>
+                  <td><input type="number" class="form-control cantidad-input" name="cantidad[]" min="1" value="1" required onchange="calcularSubtotal(this)"></td>
+                  <td><input type="number" class="form-control precio-input" name="precio[]" step="0.01" min="0" required onchange="calcularSubtotal(this)"></td>
+                  <td><input type="number" class="form-control subtotal-display" readonly value="0"></td>
+                  <td><button type="button" class="btn btn-sm btn-danger" onclick="eliminarFila(this)">🗑️</button></td>
+                </tr>
+              </tbody>
+            </table>
+            <button type="button" class="btn btn-primary btn-sm" onclick="agregarProducto()">➕ Agregar Producto</button>
+          </div>
+        </div>
+
+        <!-- Totales -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-info text-white">
+            <h5 class="mb-0">💰 Totales</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-9">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label">IVA (%)</label>
+                    <input type="number" class="form-control" id="iva" name="iva" value="19" step="0.01" min="0" onchange="calcularTotales()">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Descuento ($)</label>
+                    <input type="number" class="form-control" id="descuento" name="descuento" value="0" step="0.01" min="0" onchange="calcularTotales()">
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="alert alert-light mb-2">
+                  <strong>Subtotal:</strong> <span id="display_subtotal">$0.00</span>
+                </div>
+                <div class="alert alert-warning mb-2">
+                  <strong>IVA:</strong> <span id="display_iva">$0.00</span>
+                </div>
+                <div class="alert alert-success mb-0">
+                  <strong>TOTAL:</strong> <h4 id="display_total">$0.00</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between mb-5">
+          <a href="{{ url_for('ventas.listar_ventas') }}" class="btn btn-secondary btn-lg">✖️ Cancelar</a>
+          <button type="submit" class="btn btn-success btn-lg">✅ Registrar Venta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function actualizarPrecio(select) {
+  const option = select.options[select.selectedIndex];
+  const precio = option.getAttribute('data-precio');
+  const row = select.closest('tr');
+  const precioInput = row.querySelector('.precio-input');
+  if (precio) {
+    precioInput.value = parseFloat(precio).toFixed(2);
+    calcularSubtotal(precioInput);
+  }
+}
+
+function calcularSubtotal(element) {
+  const row = element.closest('tr');
+  const cantidad = parseFloat(row.querySelector('.cantidad-input').value) || 0;
+  const precio = parseFloat(row.querySelector('.precio-input').value) || 0;
+  const subtotal = cantidad * precio;
+  row.querySelector('.subtotal-display').value = subtotal.toFixed(2);
+  calcularTotales();
+}
+
+function calcularTotales() {
+  let subtotal = 0;
+  document.querySelectorAll('.subtotal-display').forEach(input => {
+    subtotal += parseFloat(input.value) || 0;
+  });
+  
+  const ivaPorcentaje = parseFloat(document.getElementById('iva').value) || 0;
+  const descuento = parseFloat(document.getElementById('descuento').value) || 0;
+  
+  const iva = subtotal * (ivaPorcentaje / 100);
+  const total = subtotal + iva - descuento;
+  
+  document.getElementById('display_subtotal').textContent = '$' + subtotal.toLocaleString('es-CO', {minimumFractionDigits: 2});
+  document.getElementById('display_iva').textContent = '$' + iva.toLocaleString('es-CO', {minimumFractionDigits: 2});
+  document.getElementById('display_total').textContent = '$' + total.toLocaleString('es-CO', {minimumFractionDigits: 2});
+}
+
+function agregarProducto() {
+  const tbody = document.getElementById('productosBody');
+  const newRow = tbody.querySelector('.producto-row').cloneNode(true);
+  newRow.querySelector('.producto-select').value = '';
+  newRow.querySelector('.cantidad-input').value = 1;
+  newRow.querySelector('.precio-input').value = '';
+  newRow.querySelector('.subtotal-display').value = 0;
+  tbody.appendChild(newRow);
+}
+
+function eliminarFila(button) {
+  const tbody = document.getElementById('productosBody');
+  if (tbody.querySelectorAll('tr').length > 1) {
+    button.closest('tr').remove();
+    calcularTotales();
+  } else {
+    alert('Debe haber al menos un producto.');
+  }
+}
+
+// Calcular al cargar
+calcularTotales();
+</script>
+{% endblock %}

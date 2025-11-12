@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-10">
+      <!-- Encabezado -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2>✏️ Editar Compra</h2>
+          <p class="text-muted">Factura: <strong>{{ compra.numero_factura }}</strong></p>
+        </div>
+        <a href="{{ url_for('compras.listar_compras') }}" class="btn btn-secondary">
+          ← Volver a la lista
+        </a>
+      </div>
+
+      <!-- Formulario -->
+      <form method="POST" action="{{ url_for('compras.editar_compra', id=compra.id) }}" enctype="multipart/form-data">
+        <!-- Información General -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">📋 Información General</h5>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="proveedor" class="form-label">Proveedor <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="proveedor" name="proveedor" 
+                       value="{{ compra.proveedor }}" required>
+              </div>
+              <div class="col-md-6">
+                <label for="numero_factura" class="form-label">N° Factura</label>
+                <input type="text" class="form-control" id="numero_factura" 
+                       value="{{ compra.numero_factura }}" disabled>
+                <small class="text-muted">El número de factura no se puede modificar</small>
+              </div>
+              <div class="col-md-6">
+                <label for="tipo_compra" class="form-label">Tipo de Compra <span class="text-danger">*</span></label>
+                <select class="form-select" id="tipo_compra" name="tipo_compra" required>
+                  <option value="Nacional" {% if compra.tipo_compra == 'Nacional' %}selected{% endif %}>Nacional</option>
+                  <option value="Internacional" {% if compra.tipo_compra == 'Internacional' %}selected{% endif %}>Internacional</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="documento" class="form-label">Actualizar Factura (Opcional)</label>
+                <input type="file" class="form-control" id="documento" name="documento" 
+                       accept=".pdf,.xml,.txt">
+                {% if compra.documento %}
+                <small class="text-success">📄 Archivo actual: {{ compra.documento }}</small>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detalles del Producto -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-success text-white">
+            <h5 class="mb-0">📦 Detalles del Producto</h5>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-12">
+                <label for="producto" class="form-label">Producto <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="producto" name="producto" 
+                       value="{{ compra.producto }}" required>
+              </div>
+              <div class="col-md-4">
+                <label for="cantidad" class="form-label">Cantidad <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="cantidad" name="cantidad" 
+                       min="1" value="{{ compra.cantidad }}" required>
+              </div>
+              <div class="col-md-4">
+                <label for="precio_unitario" class="form-label">Precio Unitario <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text">$</span>
+                  <input type="number" class="form-control" id="precio_unitario" name="precio_unitario" 
+                         step="0.01" min="0" value="{{ compra.precio_unitario }}" required>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label for="iva" class="form-label">IVA (%)</label>
+                <div class="input-group">
+                  <input type="number" class="form-control" id="iva" name="iva" 
+                         step="0.01" min="0" max="100" 
+                         value="{{ ((compra.iva / (compra.total - compra.iva)) * 100)|round(2) if compra.total > 0 else 19 }}" 
+                         placeholder="19">
+                  <span class="input-group-text">%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resumen de Totales -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-info text-white">
+            <h5 class="mb-0">💰 Resumen de Totales</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="alert alert-light text-center">
+                  <strong>Subtotal</strong>
+                  <h4 id="subtotal_display">$0.00</h4>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="alert alert-warning text-center">
+                  <strong>IVA</strong>
+                  <h4 id="iva_display">$0.00</h4>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="alert alert-success text-center">
+                  <strong>Total</strong>
+                  <h3 id="total_display">$0.00</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="d-flex justify-content-between mb-5">
+          <a href="{{ url_for('compras.listar_compras') }}" class="btn btn-secondary btn-lg">
+            ✖️ Cancelar
+          </a>
+          <button type="submit" class="btn btn-warning btn-lg">
+            💾 Guardar Cambios
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Script para cálculos automáticos -->
+<script>
+  function calcularTotales() {
+    const cantidad = parseFloat(document.getElementById('cantidad').value) || 0;
+    const precioUnitario = parseFloat(document.getElementById('precio_unitario').value) || 0;
+    const ivaPorcentaje = parseFloat(document.getElementById('iva').value) || 0;
+    
+    const subtotal = cantidad * precioUnitario;
+    const iva = subtotal * (ivaPorcentaje / 100);
+    const total = subtotal + iva;
+    
+    document.getElementById('subtotal_display').textContent = '$' + subtotal.toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('iva_display').textContent = '$' + iva.toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('total_display').textContent = '$' + total.toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
+  
+  // Escuchar cambios en los campos
+  document.getElementById('cantidad').addEventListener('input', calcularTotales);
+  document.getElementById('precio_unitario').addEventListener('input', calcularTotales);
+  document.getElementById('iva').addEventListener('input', calcularTotales);
+  
+  // Calcular al cargar la página
+  calcularTotales();
+</script>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2>👥 Gestión de Clientes</h2>
+      <p class="text-muted">Administra la base de clientes</p>
+    </div>
+    <div>
+      <a href="{{ url_for('ventas.listar_ventas') }}" class="btn btn-secondary me-2">← Volver a Ventas</a>
+      <a href="{{ url_for('ventas.nuevo_cliente') }}" class="btn btn-success btn-lg">➕ Nuevo Cliente</a>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-header bg-info text-white">
+      <h5 class="mb-0">📋 Lista de Clientes</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-striped mb-0">
+          <thead class="table-dark">
+            <tr>
+              <th>Nombre</th>
+              <th>Documento</th>
+              <th>Email</th>
+              <th>Teléfono</th>
+              <th>Dirección</th>
+              <th>Fecha Registro</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if clientes %}
+              {% for cliente in clientes %}
+              <tr>
+                <td><strong>{{ cliente.nombre }}</strong></td>
+                <td>{{ cliente.documento }}</td>
+                <td>{{ cliente.email or '-' }}</td>
+                <td>{{ cliente.telefono or '-' }}</td>
+                <td>{{ cliente.direccion or '-' }}</td>
+                <td>{{ cliente.fecha_registro.strftime('%d/%m/%Y') }}</td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="6" class="text-center py-4">
+                  <div class="alert alert-info mb-0">
+                    <strong>ℹ️ No hay clientes registrados</strong><br>
+                    <a href="{{ url_for('ventas.nuevo_cliente') }}" class="alert-link">Registra tu primer cliente aquí</a>
+                  </div>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
