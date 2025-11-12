@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
+import os
 
 # Inicializar extensiones
 db = SQLAlchemy()
@@ -15,15 +16,16 @@ def create_app():
     app.config['SECRET_KEY'] = 'clave_super_segura_cambiar_en_produccion'
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://admin:adminpass@mysql_db:3306/plataforma_db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'mysql+pymysql://admin:adminpass@mysql_db:3306/plataforma_db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    
 
     # Inicializar base de datos y migraciones
     db.init_app(app)
     migrate.init_app(app, db)
 
     # ==============================
-    # 📅 Filtro personalizado "date"
+    # Filtro personalizado "date"
     # ==============================
     @app.template_filter('date')
     def format_date(value, format="%d/%m/%Y %H:%M"):
