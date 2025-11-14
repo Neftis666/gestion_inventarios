@@ -22,8 +22,4 @@ if __name__ == '__main__':
         host='0.0.0.0',
         port=port,
         debug=(env == 'development')
-<<<<<<< HEAD
-tu código local
-=======
-código de GitHub
->>>>>>> 10bb1c2
+    )
