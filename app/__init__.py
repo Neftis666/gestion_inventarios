@@ -122,27 +122,8 @@ def create_app():
         # ==============================
         # 📂 Registrar Blueprints (rutas)
         # ==============================
-        from app.routes.main_routes import main_bp  # 👈 NUEVA LÍNEA
-        from app.routes.auth_routes import auth_bp
-        from app.routes.dashboard_routes import dashboard_bp
-        from app.routes.compras_routes import compras_bp
-        from app.routes.inventario_routes import inventario_bp
-        from app.routes.ventas_routes import ventas_bp
-        from app.routes.reportes_routes import reportes_bp
-        from app.routes.ordenes_routes import ordenes_bp
 
-        app.register_blueprint(main_bp)  # 👈 NUEVA LÍNEA (sin prefix)
-        app.register_blueprint(auth_bp)
-        app.register_blueprint(dashboard_bp)
-        app.register_blueprint(compras_bp)
-        app.register_blueprint(inventario_bp)
-        app.register_blueprint(ventas_bp)
-        app.register_blueprint(reportes_bp)
-        app.register_blueprint(ordenes_bp)
-        # ==============================
-        # 📂 Registrar Blueprints (rutas)
-        # ==============================
-        from app.routes import main_bp
+        from app.routes.main_routes import main_bp  # 👈 CAMBIAR ESTA LÍNEA
         from app.routes.auth_routes import auth_bp
         from app.routes.dashboard_routes import dashboard_bp
         from app.routes.compras_routes import compras_bp
@@ -159,6 +140,7 @@ def create_app():
         app.register_blueprint(ventas_bp)
         app.register_blueprint(reportes_bp)
         app.register_blueprint(ordenes_bp)
+
 
         # Crear tablas en caso de que no existan
         try:
