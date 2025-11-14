@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify
 
-main_bp = Blueprint('main', __name__)
+# Blueprint principal para la ruta raíz
+main_bp = Blueprint('home', __name__)
 
 @main_bp.route('/')
 def index():
@@ -25,5 +26,5 @@ def health():
     """Endpoint de salud para monitoreo"""
     return jsonify({
         "status": "healthy",
-        "database": "connected"
+        "service": "gestion_inventarios"
     }), 200
