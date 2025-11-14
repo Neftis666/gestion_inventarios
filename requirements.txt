@@ -7,3 +7,8 @@ pymysql==1.1.0
 cryptography==41.0.7
 python-dotenv==1.0.0
 Werkzeug==3.0.1
+<<<<<<< HEAD
+tu código local
+=======
+código de GitHub
+>>>>>>> 10bb1c2
