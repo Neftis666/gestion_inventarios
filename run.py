@@ -1,12 +1,25 @@
-from flask import Flask, redirect
-from app import create_app  # Importa la factory de Flask
+# run.py
+import os
+from app import create_app, db
 
+# Crear la aplicación
 app = create_app()
 
-# Imprimir todas las rutas definidas todas 
-print("Rutas disponibles en Flask:")
-for rule in app.url_map.iter_rules():
-    print(f"{rule.endpoint} - {rule}")
+if __name__ == '__main__':
+    # Información de debug
+    env = os.getenv('FLASK_ENV', 'development')
+    port = int(os.getenv('PORT', 5000))
     
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    print("=" * 60)
+    print(f"🚀 Iniciando aplicación")
+    print(f"📍 Entorno: {env}")
+    print(f"🔌 Puerto: {port}")
+    print(f"🗄️  Railway: {'SÍ' if os.getenv('MYSQLHOST') else 'NO (Docker Compose)'}")
+    print("=" * 60)
+    
+    # Iniciar servidor
+    app.run(
+        host='0.0.0.0',
+        port=port,
+        debug=(env == 'development')
+    )
