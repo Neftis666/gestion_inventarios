@@ -14,13 +14,23 @@ def get_database_uri():
     Obtiene la URI de base de datos según el entorno.
     Detecta automáticamente si está en Railway o Docker Compose.
     """
-    # Detectar Railway por la presencia de MYSQLHOST
+    # ============================================
+    # PRIORIDAD 1: DATABASE_URL (Railway recomendado)
+    # ============================================
+    database_url = os.getenv('DATABASE_URL')
+    if database_url:
+        # Asegura que use pymysql
+        if database_url.startswith('mysql://'):
+            database_url = database_url.replace('mysql://', 'mysql+pymysql://', 1)
+        print(f"🔗 Usando DATABASE_URL")
+        return database_url
+    
+    # ============================================
+    # PRIORIDAD 2: Variables individuales de Railway
+    # ============================================
     railway_host = os.getenv('MYSQLHOST')
     
     if railway_host:
-        # ============================================
-        # 🚂 CONFIGURACIÓN PARA RAILWAY
-        # ============================================
         host = railway_host
         user = os.getenv('MYSQLUSER', 'root')
         password = os.getenv('MYSQLPASSWORD', '')
@@ -33,31 +43,21 @@ def get_database_uri():
         uri = f"mysql+pymysql://{user}:{password_encoded}@{host}:{port}/{database}"
         print(f"🚂 Conectando a Railway MySQL: {host}:{port}/{database}")
         return uri
-    else:
-        # ============================================
-        # 🐳 CONFIGURACIÓN PARA DOCKER COMPOSE LOCAL
-        # ============================================
-        # Intenta primero con DATABASE_URL (si existe)
-        database_url = os.getenv('DATABASE_URL')
-        if database_url:
-            # Asegura que use pymysql
-            if database_url.startswith('mysql://'):
-                database_url = database_url.replace('mysql://', 'mysql+pymysql://', 1)
-            print(f"🐳 Usando DATABASE_URL: {database_url.split('@')[1] if '@' in database_url else database_url}")
-            return database_url
-        
-        # Si no, construye desde variables individuales
-        host = os.getenv('MYSQL_HOST', 'db')  # 'db' es el nombre en docker-compose
-        user = os.getenv('MYSQL_USER', 'admin')
-        password = os.getenv('MYSQL_PASSWORD', 'adminpass')
-        database = os.getenv('MYSQL_DATABASE', 'plataforma_db')
-        port = os.getenv('MYSQL_PORT', '3306')
-        
-        password_encoded = quote_plus(password)
-        
-        uri = f"mysql+pymysql://{user}:{password_encoded}@{host}:{port}/{database}"
-        print(f"🐳 Conectando a Docker MySQL: {host}:{port}/{database}")
-        return uri
+    
+    # ============================================
+    # PRIORIDAD 3: Docker Compose local
+    # ============================================
+    host = os.getenv('MYSQL_HOST', 'db')  # 'db' es el nombre en docker-compose
+    user = os.getenv('MYSQL_USER', 'admin')
+    password = os.getenv('MYSQL_PASSWORD', 'adminpass')
+    database = os.getenv('MYSQL_DATABASE', 'plataforma_db')
+    port = os.getenv('MYSQL_PORT', '3306')
+    
+    password_encoded = quote_plus(password)
+    
+    uri = f"mysql+pymysql://{user}:{password_encoded}@{host}:{port}/{database}"
+    print(f"🐳 Conectando a Docker MySQL: {host}:{port}/{database}")
+    return uri
 
 def create_app():
     app = Flask(__name__)
