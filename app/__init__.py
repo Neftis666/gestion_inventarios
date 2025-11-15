@@ -26,12 +26,22 @@ def get_database_uri():
         return database_url
     
     # ============================================
-    # PRIORIDAD 2: Variables individuales de Railway
+    # PRIORIDAD 2: Construcción manual con TCP Proxy (Railway nuevo)
+    # ============================================
+    # Railway ahora usa variables MYSQL_PRIVATE_URL o similar
+    mysql_url = os.getenv('MYSQL_URL') or os.getenv('MYSQL_PRIVATE_URL')
+    if mysql_url:
+        if mysql_url.startswith('mysql://'):
+            mysql_url = mysql_url.replace('mysql://', 'mysql+pymysql://', 1)
+        print(f"🔗 Usando MYSQL_URL de Railway")
+        return mysql_url
+    
+    # ============================================
+    # PRIORIDAD 3: Variables individuales de Railway
     # ============================================
     railway_host = os.getenv('MYSQLHOST')
     
     if railway_host:
-        host = railway_host
         user = os.getenv('MYSQLUSER', 'root')
         password = os.getenv('MYSQLPASSWORD', '')
         database = os.getenv('MYSQLDATABASE', 'railway')
@@ -40,14 +50,20 @@ def get_database_uri():
         # Codifica la contraseña por si tiene caracteres especiales
         password_encoded = quote_plus(password)
         
-        uri = f"mysql+pymysql://{user}:{password_encoded}@{host}:{port}/{database}"
-        print(f"🚂 Conectando a Railway MySQL: {host}:{port}/{database}")
+        # Intentar primero con TCP Proxy (si está disponible)
+        tcp_proxy_port = os.getenv('MYSQL_TCP_PROXY_PORT')
+        if tcp_proxy_port:
+            uri = f"mysql+pymysql://{user}:{password_encoded}@{railway_host}:{tcp_proxy_port}/{database}"
+            print(f"🔗 Conectando a Railway MySQL via TCP Proxy: {railway_host}:{tcp_proxy_port}/{database}")
+        else:
+            uri = f"mysql+pymysql://{user}:{password_encoded}@{railway_host}:{port}/{database}"
+            print(f"🚂 Conectando a Railway MySQL: {railway_host}:{port}/{database}")
         return uri
     
     # ============================================
-    # PRIORIDAD 3: Docker Compose local
+    # PRIORIDAD 4: Docker Compose local
     # ============================================
-    host = os.getenv('MYSQL_HOST', 'db')  # 'db' es el nombre en docker-compose
+    host = os.getenv('MYSQL_HOST', 'db')
     user = os.getenv('MYSQL_USER', 'admin')
     password = os.getenv('MYSQL_PASSWORD', 'adminpass')
     database = os.getenv('MYSQL_DATABASE', 'plataforma_db')
@@ -122,8 +138,7 @@ def create_app():
         # ==============================
         # 📂 Registrar Blueprints (rutas)
         # ==============================
-
-        from app.routes.main_routes import main_bp  # 👈 CAMBIAR ESTA LÍNEA
+        from app.routes.main_routes import main_bp
         from app.routes.auth_routes import auth_bp
         from app.routes.dashboard_routes import dashboard_bp
         from app.routes.compras_routes import compras_bp
@@ -140,7 +155,6 @@ def create_app():
         app.register_blueprint(ventas_bp)
         app.register_blueprint(reportes_bp)
         app.register_blueprint(ordenes_bp)
-
 
         # Crear tablas en caso de que no existan
         try:
