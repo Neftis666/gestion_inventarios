@@ -12,57 +12,15 @@ migrate = Migrate()
 def get_database_uri():
     """
     Obtiene la URI de base de datos según el entorno.
-    Detecta automáticamente si está en Railway o Docker Compose.
     """
-    # ============================================
-    # PRIORIDAD 1: DATABASE_URL (Railway recomendado)
-    # ============================================
+    # Railway Postgres (recomendado)
     database_url = os.getenv('DATABASE_URL')
     if database_url:
-        # Asegura que use pymysql
-        if database_url.startswith('mysql://'):
-            database_url = database_url.replace('mysql://', 'mysql+pymysql://', 1)
-        print(f"🔗 Usando DATABASE_URL")
+        # Railway Postgres ya viene listo
+        print(f"🔗 Usando DATABASE_URL (Postgres)")
         return database_url
     
-    # ============================================
-    # PRIORIDAD 2: Construcción manual con TCP Proxy (Railway nuevo)
-    # ============================================
-    # Railway ahora usa variables MYSQL_PRIVATE_URL o similar
-    mysql_url = os.getenv('MYSQL_URL') or os.getenv('MYSQL_PRIVATE_URL')
-    if mysql_url:
-        if mysql_url.startswith('mysql://'):
-            mysql_url = mysql_url.replace('mysql://', 'mysql+pymysql://', 1)
-        print(f"🔗 Usando MYSQL_URL de Railway")
-        return mysql_url
-    
-    # ============================================
-    # PRIORIDAD 3: Variables individuales de Railway
-    # ============================================
-    railway_host = os.getenv('MYSQLHOST')
-    
-    if railway_host:
-        user = os.getenv('MYSQLUSER', 'root')
-        password = os.getenv('MYSQLPASSWORD', '')
-        database = os.getenv('MYSQLDATABASE', 'railway')
-        port = os.getenv('MYSQLPORT', '3306')
-        
-        # Codifica la contraseña por si tiene caracteres especiales
-        password_encoded = quote_plus(password)
-        
-        # Intentar primero con TCP Proxy (si está disponible)
-        tcp_proxy_port = os.getenv('MYSQL_TCP_PROXY_PORT')
-        if tcp_proxy_port:
-            uri = f"mysql+pymysql://{user}:{password_encoded}@{railway_host}:{tcp_proxy_port}/{database}"
-            print(f"🔗 Conectando a Railway MySQL via TCP Proxy: {railway_host}:{tcp_proxy_port}/{database}")
-        else:
-            uri = f"mysql+pymysql://{user}:{password_encoded}@{railway_host}:{port}/{database}"
-            print(f"🚂 Conectando a Railway MySQL: {railway_host}:{port}/{database}")
-        return uri
-    
-    # ============================================
-    # PRIORIDAD 4: Docker Compose local
-    # ============================================
+    # Fallback a MySQL local
     host = os.getenv('MYSQL_HOST', 'db')
     user = os.getenv('MYSQL_USER', 'admin')
     password = os.getenv('MYSQL_PASSWORD', 'adminpass')
@@ -72,7 +30,7 @@ def get_database_uri():
     password_encoded = quote_plus(password)
     
     uri = f"mysql+pymysql://{user}:{password_encoded}@{host}:{port}/{database}"
-    print(f"🐳 Conectando a Docker MySQL: {host}:{port}/{database}")
+    print(f"🐳 Conectando a MySQL local: {host}:{port}/{database}")
     return uri
 
 def create_app():
