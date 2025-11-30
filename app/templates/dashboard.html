@@ -83,5 +83,113 @@
       </div>
     </div>
   </div>
+
+  <!-- GRÁFICAS -->
+  <div class="row mt-5">
+
+    <!-- Ventas vs Compras -->
+    <div class="col-md-12">
+      <div class="card shadow-sm p-3 mb-4">
+        <h4 class="text-center">📈 Ventas vs Compras</h4>
+        <canvas id="ventasComprasChart" height="120"></canvas>
+      </div>
+    </div>
+
+    <!-- Cumplimiento de Meta -->
+    <div class="col-md-6">
+      <div class="card shadow-sm p-3 mb-4 text-center">
+        <h4>🎯 Cumplimiento de Meta</h4>
+        <canvas id="metaChart" height="300"></canvas>
+        <p class="mt-2"><strong>Meta:</strong> ${{ meta if meta else 0 }}</p>
+        <p><strong>Ventas acumuladas:</strong> ${{ suma_ventas }}</p>
+        <p><strong>Faltante:</strong> ${{ (meta - suma_ventas) if meta else 0 }}</p>
+      </div>
+    </div>
+
+    <!-- Utilidad -->
+    <div class="col-md-6">
+      <div class="card shadow-sm p-3 mb-4 text-center">
+        <h4>💰 Utilidad del Período</h4>
+        <canvas id="utilidadChart" height="300"></canvas>
+      </div>
+    </div>
+
+  </div>
 </div>
+
+<!-- CHART.JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+/* -------------------- 1. Ventas vs Compras -------------------- */
+const ventasComprasChart = new Chart(document.getElementById('ventasComprasChart'), {
+  type: 'bar',
+  data: {
+    labels: {{ meses | tojson }},
+    datasets: [
+      {
+        label: 'Ventas',
+        data: {{ ventas_por_mes | tojson }},
+        borderWidth: 2,
+        backgroundColor: 'rgba(0, 200, 0, 0.4)',
+        borderColor: 'green'
+      },
+      {
+        label: 'Compras',
+        data: {{ compras_por_mes | tojson }},
+        borderWidth: 2,
+        backgroundColor: 'rgba(255, 0, 0, 0.4)',
+        borderColor: 'red'
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { tooltip: { enabled: true } }
+  }
+});
+
+/* -------------------- 2. Cumplimiento de Meta -------------------- */
+const meta = {{ meta if meta else 0 }};
+const ventasAcum = {{ suma_ventas }};
+const porcentaje = meta > 0 ? (ventasAcum / meta) * 100 : 0;
+
+let colorMeta = "red";
+if (porcentaje >= 90) colorMeta = "green";
+else if (porcentaje >= 70) colorMeta = "yellow";
+
+const metaChart = new Chart(document.getElementById('metaChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ["Cumplido", "Faltante"],
+    datasets: [{
+      data: [porcentaje, 100 - porcentaje],
+      backgroundColor: [colorMeta, "lightgray"]
+    }]
+  },
+  options: { responsive: true }
+});
+
+/* -------------------- 3. Utilidad -------------------- */
+const utilidadChart = new Chart(document.getElementById('utilidadChart'), {
+  type: 'bar',
+  data: {
+    labels: ["Ingresos", "Costos", "Utilidad"],
+    datasets: [{
+      data: [
+        {{ suma_ventas }},
+        {{ suma_compras }},
+        {{ margen }}
+      ],
+      backgroundColor: [
+        "green",
+        "red",
+        "{{ 'green' if margen >= 0 else 'red' }}"
+      ]
+    }]
+  },
+  options: { responsive: true }
+});
+</script>
+
 {% endblock %}
