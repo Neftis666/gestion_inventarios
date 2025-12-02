@@ -3,6 +3,60 @@
 {% block title %}Sistema de Códigos de Barras{% endblock %}
 
 {% block content %}
+<style>
+    /* Colores personalizados para mejor visibilidad */
+    .card-header-primary {
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%) !important;
+        color: white !important;
+    }
+    
+    .card-header-success {
+        background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+        color: white !important;
+    }
+    
+    .card-header-danger {
+        background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%) !important;
+        color: white !important;
+    }
+    
+    .nav-tabs .nav-link {
+        color: #1e3a8a;
+        font-weight: 500;
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: #2563eb;
+        font-weight: 600;
+        border-bottom: 3px solid #2563eb;
+    }
+    
+    .alert-info {
+        background-color: #dbeafe;
+        border-left: 4px solid #2563eb;
+        color: #1e40af;
+    }
+    
+    .badge {
+        font-size: 0.875rem;
+        padding: 0.5em 0.75em;
+    }
+    
+    .stat-card {
+        border-left: 4px solid;
+        transition: transform 0.2s;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stat-card.primary { border-left-color: #2563eb; }
+    .stat-card.warning { border-left-color: #f59e0b; }
+    .stat-card.danger { border-left-color: #ef4444; }
+    .stat-card.success { border-left-color: #10b981; }
+</style>
+
 <div class="container-fluid mt-4">
     <div class="row">
         <div class="col-12">
@@ -56,8 +110,8 @@
                 <div class="tab-pane fade show active" id="scan-content">
                     <div class="row">
                         <div class="col-lg-6">
-                            <div class="card">
-                                <div class="card-header" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); color: white;">
+                            <div class="card shadow">
+                                <div class="card-header card-header-primary">
                                     <h5 class="mb-0"><i class="bi bi-upc-scan me-2"></i>Escanear Código</h5>
                                 </div>
                                 <div class="card-body">
@@ -92,8 +146,8 @@
 
                 <!-- TAB 2: CREAR PRODUCTO -->
                 <div class="tab-pane fade" id="create-content">
-                    <div class="card">
-                        <div class="card-header bg-success text-white">
+                    <div class="card shadow">
+                        <div class="card-header card-header-success">
                             <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Crear Nuevo Producto</h5>
                         </div>
                         <div class="card-body">
@@ -180,8 +234,8 @@
                 <div class="tab-pane fade" id="inventory-content">
                     <div class="row">
                         <div class="col-lg-6">
-                            <div class="card border-success">
-                                <div class="card-header bg-success text-white">
+                            <div class="card border-success shadow">
+                                <div class="card-header card-header-success">
                                     <h5 class="mb-0"><i class="bi bi-arrow-down me-2"></i>Entrada de Inventario</h5>
                                 </div>
                                 <div class="card-body">
@@ -205,8 +259,8 @@
                         </div>
 
                         <div class="col-lg-6">
-                            <div class="card border-danger">
-                                <div class="card-header bg-danger text-white">
+                            <div class="card border-danger shadow">
+                                <div class="card-header card-header-danger">
                                     <h5 class="mb-0"><i class="bi bi-arrow-up me-2"></i>Salida de Inventario</h5>
                                 </div>
                                 <div class="card-body">
@@ -235,11 +289,11 @@
 
                 <!-- TAB 4: LISTA DE PRODUCTOS -->
                 <div class="tab-pane fade" id="products-content">
-                    <div class="card">
-                        <div class="card-header">
+                    <div class="card shadow">
+                        <div class="card-header card-header-primary">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0"><i class="bi bi-boxes me-2"></i>Lista de Productos</h5>
-                                <button class="btn btn-primary btn-sm" onclick="loadProducts()">
+                                <button class="btn btn-light btn-sm" onclick="loadProducts()">
                                     <i class="bi bi-arrow-clockwise me-2"></i>Actualizar
                                 </button>
                             </div>
@@ -254,45 +308,45 @@
                 <div class="tab-pane fade" id="stats-content">
                     <div class="row">
                         <div class="col-md-3">
-                            <div class="card text-center">
+                            <div class="card text-center stat-card primary shadow">
                                 <div class="card-body">
-                                    <i class="bi bi-box fa-3x text-primary mb-3" style="font-size: 3rem;"></i>
-                                    <h3 id="totalProducts">-</h3>
-                                    <p class="text-muted mb-0">Total Productos</p>
+                                    <i class="bi bi-box text-primary mb-3" style="font-size: 3rem;"></i>
+                                    <h3 id="totalProducts" class="text-primary">-</h3>
+                                    <p class="text-muted mb-0"><strong>Total Productos</strong></p>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card text-center">
+                            <div class="card text-center stat-card warning shadow">
                                 <div class="card-body">
-                                    <i class="bi bi-exclamation-triangle fa-3x text-warning mb-3" style="font-size: 3rem;"></i>
-                                    <h3 id="lowStockProducts">-</h3>
-                                    <p class="text-muted mb-0">Stock Bajo</p>
+                                    <i class="bi bi-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
+                                    <h3 id="lowStockProducts" class="text-warning">-</h3>
+                                    <p class="text-muted mb-0"><strong>Stock Bajo</strong></p>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card text-center">
+                            <div class="card text-center stat-card danger shadow">
                                 <div class="card-body">
-                                    <i class="bi bi-x-circle fa-3x text-danger mb-3" style="font-size: 3rem;"></i>
-                                    <h3 id="outOfStock">-</h3>
-                                    <p class="text-muted mb-0">Sin Stock</p>
+                                    <i class="bi bi-x-circle text-danger mb-3" style="font-size: 3rem;"></i>
+                                    <h3 id="outOfStock" class="text-danger">-</h3>
+                                    <p class="text-muted mb-0"><strong>Sin Stock</strong></p>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card text-center">
+                            <div class="card text-center stat-card success shadow">
                                 <div class="card-body">
-                                    <i class="bi bi-currency-dollar fa-3x text-success mb-3" style="font-size: 3rem;"></i>
-                                    <h3 id="inventoryValue">-</h3>
-                                    <p class="text-muted mb-0">Valor Inventario</p>
+                                    <i class="bi bi-currency-dollar text-success mb-3" style="font-size: 3rem;"></i>
+                                    <h3 id="inventoryValue" class="text-success">-</h3>
+                                    <p class="text-muted mb-0"><strong>Valor Inventario</strong></p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="card mt-4">
-                        <div class="card-header">
+                    <div class="card mt-4 shadow">
+                        <div class="card-header card-header-primary">
                             <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Movimientos Recientes</h5>
                         </div>
                         <div class="card-body">
