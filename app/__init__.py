@@ -88,9 +88,31 @@ def create_app():
     # ==============================
     with app.app_context():
         # Importar modelos existentes dentro del contexto
-        from app.models import user_model, compra_model
+        try:
+            from app.models import compra_model
+            print("✅ Modelo de compras cargado")
+        except ImportError as e:
+            print(f"⚠️ Modelo de compras no encontrado: {e}")
         
-        # 🆕 SISTEMA DE ROLES: Importar modelos actualizados
+        try:
+            from app.models import inventario_model
+            print("✅ Modelo de inventario cargado")
+        except ImportError as e:
+            print(f"⚠️ Modelo de inventario no encontrado: {e}")
+        
+        try:
+            from app.models import venta_model
+            print("✅ Modelo de ventas cargado")
+        except ImportError as e:
+            print(f"⚠️ Modelo de ventas no encontrado: {e}")
+        
+        try:
+            from app.models import orden_model
+            print("✅ Modelo de órdenes cargado")
+        except ImportError as e:
+            print(f"⚠️ Modelo de órdenes no encontrado: {e}")
+        
+        # 🆕 SISTEMA DE ROLES Y USUARIOS
         try:
             from app.models import user_role_model
             print("✅ Modelos de usuarios y roles cargados")
