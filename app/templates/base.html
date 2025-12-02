@@ -110,8 +110,8 @@
           </li>
           {% endif %}
           
-          <!-- Códigos de Barras - Quienes tienen permiso -->
-          {% if session.get('permissions', {}).get('can_create_barcode') or session.get('permissions', {}).get('can_edit_barcode') %}
+          <!-- Códigos de Barras - NO para COMERCIAL -->
+          {% if session.get('role_name') != 'COMERCIAL' %}
           <li class="nav-item">
             <a class="nav-link {% if request.endpoint and 'barcode' in request.endpoint %}active{% endif %}" 
                href="{{ url_for('barcode.index') }}">
@@ -120,15 +120,13 @@
           </li>
           {% endif %}
           
-          <!-- Órdenes - Quienes pueden crear o aprobar -->
-          {% if session.get('permissions', {}).get('can_create_orders') or session.get('permissions', {}).get('can_approve_orders') %}
+          <!-- Órdenes - Todos (COMERCIAL solo crea, otros aprueban) -->
           <li class="nav-item">
             <a class="nav-link {% if request.endpoint and 'ordenes' in request.endpoint %}active{% endif %}" 
                href="{{ url_for('ordenes.listar_ordenes') }}">
               <i class="bi bi-file-earmark-text"></i> Órdenes De Compra
             </a>
           </li>
-          {% endif %}
           
           <!-- Reportes - Quienes tienen acceso a reportes -->
           {% if session.get('permissions', {}).get('can_access_reports') %}
@@ -140,11 +138,11 @@
           </li>
           {% endif %}
           
-          <!-- Gestión de Usuarios - Solo ADMINISTRADOR -->
+          <!-- Usuarios - Solo ADMINISTRADOR -->
           {% if session.get('permissions', {}).get('can_manage_users') %}
           <li class="nav-item">
             <a class="nav-link {% if request.endpoint and 'usuarios' in request.endpoint %}active{% endif %}" 
-               href="#">
+               href="{{ url_for('usuarios.listar_usuarios') }}">
               <i class="bi bi-people"></i> Usuarios
             </a>
           </li>
