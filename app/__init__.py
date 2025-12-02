@@ -73,6 +73,15 @@ def create_app():
             return value.strftime(format)
         except Exception:
             return value
+    
+    # ==============================
+    # 🔐 Inyectar funciones de permisos en templates
+    # ==============================
+    @app.context_processor
+    def utility_processor():
+        """Inyecta funciones útiles en todos los templates"""
+        from app.utils.decorators import inject_permissions
+        return inject_permissions()
 
     # ==============================
     # 📦 Contexto de aplicación
@@ -80,6 +89,14 @@ def create_app():
     with app.app_context():
         # Importar modelos existentes dentro del contexto
         from app.models import user_model, role_model, compra_model
+        
+        # 🆕 SISTEMA DE ROLES: Importar modelos actualizados
+        try:
+            from app.models import user_role_model
+            print("✅ Modelos de usuarios y roles cargados")
+        except ImportError as e:
+            print(f"⚠️ Modelos de usuarios y roles no encontrados: {e}")
+        
         try:
             from app.models import inventario_model
         except ImportError:
