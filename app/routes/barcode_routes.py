@@ -8,13 +8,18 @@ from sqlalchemy import or_, func
 barcode_bp = Blueprint('barcode', __name__, url_prefix='/barcode')
 
 # ============================================
-# INTERFAZ WEB
+# INTERFAZ WEB - DEBE IR PRIMERO
 # ============================================
 
+@barcode_bp.route('/')
+def index():
+    """Vista principal del módulo de códigos de barras"""
+    return render_template('barcode/index.html')
+
 @barcode_bp.route('/scanner')
-def scanner_interface():
-    """Interfaz web para gestión de códigos de barras"""
-    return render_template('barcode_scanner.html')
+def scanner():
+    """Interfaz alternativa para escaneo rápido"""
+    return render_template('barcode/index.html')
 
 
 # ============================================
