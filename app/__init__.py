@@ -92,18 +92,33 @@ def create_app():
             from app.models import orden_model
         except ImportError:
             pass
+        
+        # ✨ NUEVO: Importar modelos de códigos de barras
+        try:
+            from app.models import product_barcode_model
+            print("✅ Modelos de códigos de barras cargados")
+        except ImportError as e:
+            print(f"⚠️ No se pudieron cargar modelos de códigos de barras: {e}")
 
         # ==============================
         # 📂 Registrar Blueprints (rutas)
         # ==============================
-        from app.routes.main_routes import main_bp
-        from app.routes.auth_routes import auth_bp
-        from app.routes.dashboard_routes import dashboard_bp
-        from app.routes.compras_routes import compras_bp
-        from app.routes.inventario_routes import inventario_bp
-        from app.routes.ventas_routes import ventas_bp
-        from app.routes.reportes_routes import reportes_bp
-        from app.routes.ordenes_routes import ordenes_bp
+        from app.routes.main_routes import main_bp # type: ignore
+        from app.routes.auth_routes import auth_bp # type: ignore
+        from app.routes.dashboard_routes import dashboard_bp # type: ignore
+        from app.routes.compras_routes import compras_bp # type: ignore
+        from app.routes.inventario_routes import inventario_bp # type: ignore
+        from app.routes.ventas_routes import ventas_bp # type: ignore
+        from app.routes.reportes_routes import reportes_bp # type: ignore
+        from app.routes.ordenes_routes import ordenes_bp # type: ignore
+        
+        # ✨ NUEVO: Registrar blueprint de códigos de barras
+        try:
+            from app.routes.barcode_routes import barcode_bp # type: ignore
+            app.register_blueprint(barcode_bp)
+            print("✅ Sistema de códigos de barras registrado")
+        except ImportError as e:
+            print(f"⚠️ No se pudo registrar sistema de códigos de barras: {e}")
 
         app.register_blueprint(main_bp)
         app.register_blueprint(auth_bp)
