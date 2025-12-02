@@ -1,32 +1,46 @@
+
 {% extends "base.html" %}
 {% block content %}
 <div class="container mt-4">
   <h2>📊 Panel Principal</h2>
-  <p class="text-muted">Resumen general de la plataforma</p>
-
+  <p class="text-muted">
+    Bienvenido, <strong>{{ session.get('full_name', session.get('username')) }}</strong> 
+    | Rol: <span class="badge bg-secondary">{{ session.get('role_display', 'Usuario') }}</span>
+  </p>
+  
   <!-- Tarjetas de resumen -->
   <div class="row text-center mt-4">
+    <!-- Usuarios - Solo ADMINISTRADOR -->
+    {% if session.get('permissions', {}).get('can_manage_users') %}
     <div class="col-md-3">
       <div class="card shadow-sm p-3 border-primary">
         <h4>👤 Usuarios</h4>
         <h2 class="text-primary">{{ total_users }}</h2>
       </div>
     </div>
-
+    {% endif %}
+    
+    <!-- Compras - ADMINISTRADOR, ASTRID -->
+    {% if session.get('role_name') in ['ADMINISTRADOR', 'ASTRID'] %}
     <div class="col-md-3">
       <div class="card shadow-sm p-3 border-info">
         <h4>🧾 Compras</h4>
         <h2 class="text-info">{{ total_compras }}</h2>
       </div>
     </div>
-
+    {% endif %}
+    
+    <!-- Ventas - Todos excepto COMERCIAL solo ve cantidad -->
+    {% if session.get('permissions', {}).get('can_access_reports') %}
     <div class="col-md-3">
       <div class="card shadow-sm p-3 border-success">
         <h4>💲 Ventas</h4>
         <h2 class="text-success">{{ total_ventas }}</h2>
       </div>
     </div>
-
+    {% endif %}
+    
+    <!-- Productos - Todos pueden ver -->
     <div class="col-md-3">
       <div class="card shadow-sm p-3 border-warning">
         <h4>📦 Productos</h4>
@@ -34,8 +48,9 @@
       </div>
     </div>
   </div>
-
-  <!-- Alertas -->
+  
+  <!-- Alertas - Solo quienes pueden aprobar órdenes o editar inventario -->
+  {% if session.get('permissions', {}).get('can_approve_orders') or session.get('permissions', {}).get('can_edit_inventory') %}
   <div class="row mt-4">
     <div class="col-md-6">
       <div class="card shadow-sm">
@@ -44,13 +59,13 @@
         </div>
         <div class="card-body">
           <ul class="list-group list-group-flush">
-            {% if stock_critico > 0 %}
+            {% if stock_critico > 0 and session.get('permissions', {}).get('can_edit_inventory') %}
             <li class="list-group-item list-group-item-danger">
               <strong>{{ stock_critico }}</strong> productos con stock crítico
               <a href="{{ url_for('inventario.listar_inventario') }}" class="float-end btn btn-sm btn-danger">Ver</a>
             </li>
             {% endif %}
-            {% if ordenes_pendientes > 0 %}
+            {% if ordenes_pendientes > 0 and session.get('permissions', {}).get('can_approve_orders') %}
             <li class="list-group-item list-group-item-warning">
               <strong>{{ ordenes_pendientes }}</strong> órdenes pendientes de aprobar
               <a href="{{ url_for('ordenes.listar_ordenes') }}" class="float-end btn btn-sm btn-warning">Ver</a>
@@ -65,7 +80,7 @@
         </div>
       </div>
     </div>
-
+    
     <!-- Accesos rápidos -->
     <div class="col-md-6">
       <div class="card shadow-sm">
@@ -74,14 +89,49 @@
         </div>
         <div class="card-body">
           <div class="d-grid gap-2">
+            <!-- Nueva Compra - Solo ADMINISTRADOR y ASTRID -->
+            {% if session.get('role_name') in ['ADMINISTRADOR', 'ASTRID'] %}
             <a href="{{ url_for('compras.nueva_compra') }}" class="btn btn-primary">🧾 Nueva Compra</a>
+            {% endif %}
+            
+            <!-- Nueva Venta - ADMINISTRADOR, ASTRID -->
+            {% if session.get('role_name') in ['ADMINISTRADOR', 'ASTRID'] %}
             <a href="{{ url_for('ventas.nueva_venta') }}" class="btn btn-success">💲 Nueva Venta</a>
+            {% endif %}
+            
+            <!-- Nuevo Producto - Quienes pueden crear inventario -->
+            {% if session.get('permissions', {}).get('can_create_inventory') %}
             <a href="{{ url_for('inventario.nuevo_producto') }}" class="btn btn-warning">📦 Nuevo Producto</a>
+            {% endif %}
+            
+            <!-- Nueva Orden - Quienes pueden crear órdenes -->
+            {% if session.get('permissions', {}).get('can_create_orders') %}
             <a href="{{ url_for('ordenes.nueva_orden') }}" class="btn btn-info">📑 Nueva Orden</a>
+            {% endif %}
           </div>
         </div>
       </div>
     </div>
   </div>
+  {% else %}
+  <!-- Vista simplificada para COMERCIAL -->
+  <div class="row mt-4">
+    <div class="col-md-12">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">🚀 Accesos Rápidos</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            {% if session.get('permissions', {}).get('can_create_orders') %}
+            <a href="{{ url_for('ordenes.nueva_orden') }}" class="btn btn-info">📑 Nueva Orden</a>
+            {% endif %}
+            <a href="{{ url_for('inventario.listar_inventario') }}" class="btn btn-secondary">📦 Ver Inventario</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}
