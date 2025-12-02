@@ -88,7 +88,7 @@ def create_app():
     # ==============================
     with app.app_context():
         # Importar modelos existentes dentro del contexto
-        from app.models import user_model, role_model, compra_model
+        from app.models import user_model, compra_model
         
         # 🆕 SISTEMA DE ROLES: Importar modelos actualizados
         try:
