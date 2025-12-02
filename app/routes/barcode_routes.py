@@ -34,7 +34,8 @@ def scan_barcode():
     """
     try:
         data = request.get_json()
-        barcode = data.get('barcode', '').strip()
+        barcode_input = data.get('barcode') or ''
+        barcode = barcode_input.strip() if barcode_input else ''
         
         if not barcode:
             return jsonify({
@@ -97,8 +98,12 @@ def search_products():
     Soporta búsqueda por nombre, código, SKU, categoría.
     """
     try:
-        query = request.args.get('q', '').strip()
-        category = request.args.get('category', '').strip()
+        query_input = request.args.get('q') or ''
+        query = query_input.strip() if query_input else ''
+        
+        category_input = request.args.get('category') or ''
+        category = category_input.strip() if category_input else ''
+        
         low_stock = request.args.get('low_stock', 'false').lower() == 'true'
         
         # Construir consulta base
@@ -159,7 +164,9 @@ def create_product_with_barcode():
                 }), 400
         
         # Verificar código de barras personalizado si se proporciona
-        custom_barcode = data.get('barcode', '').strip()
+        custom_barcode = data.get('barcode') or ''
+        custom_barcode = custom_barcode.strip() if custom_barcode else ''
+        
         if custom_barcode:
             # Validar formato
             validation = BarcodeGenerator.validate_barcode(custom_barcode)
@@ -177,7 +184,9 @@ def create_product_with_barcode():
                 }), 400
         
         # Verificar SKU único si se proporciona
-        sku = data.get('sku', '').strip()
+        sku = data.get('sku') or ''
+        sku = sku.strip() if sku else ''
+        
         if sku and Product.query.filter_by(sku=sku).first():
             return jsonify({
                 'success': False,
@@ -190,15 +199,15 @@ def create_product_with_barcode():
         # Crear producto
         product = Product(
             name=data.get('name'),
-            description=data.get('description', ''),
-            barcode=custom_barcode or None,  # Si es None, se genera automático
+            description=data.get('description') or '',
+            barcode=custom_barcode or None,  # Si es vacío, se genera automático
             sku=sku or None,
             price=float(data.get('price', 0)),
             cost=float(data.get('cost', 0)),
             stock=int(data.get('stock', 0)),
             min_stock=int(data.get('min_stock', 10)),
-            category=data.get('category', ''),
-            supplier=data.get('supplier', ''),
+            category=data.get('category') or '',
+            supplier=data.get('supplier') or '',
             created_by=current_user
         )
         
@@ -343,7 +352,9 @@ def inventory_entry():
     """Registra una entrada de inventario mediante escaneo"""
     try:
         data = request.get_json()
-        barcode = data.get('barcode', '').strip()
+        barcode_input = data.get('barcode') or ''
+        barcode = barcode_input.strip() if barcode_input else ''
+        
         quantity = int(data.get('quantity', 1))
         reason = data.get('reason', 'Entrada por escaneo')
         reference = data.get('reference', '')
@@ -414,7 +425,9 @@ def inventory_exit():
     """Registra una salida de inventario mediante escaneo"""
     try:
         data = request.get_json()
-        barcode = data.get('barcode', '').strip()
+        barcode_input = data.get('barcode') or ''
+        barcode = barcode_input.strip() if barcode_input else ''
+        
         quantity = int(data.get('quantity', 1))
         reason = data.get('reason', 'Salida por escaneo')
         reference = data.get('reference', '')
@@ -525,7 +538,9 @@ def generate_barcode():
     """Genera un código de barras para un código dado"""
     try:
         data = request.get_json()
-        code = data.get('code', '').strip()
+        code_input = data.get('code') or ''
+        code = code_input.strip() if code_input else ''
+        
         barcode_type = data.get('type', 'ean13')
         
         if not code:
@@ -550,7 +565,9 @@ def generate_qr():
     """Genera un código QR para datos dados"""
     try:
         data = request.get_json()
-        qr_data = data.get('data', '').strip()
+        qr_data_input = data.get('data') or ''
+        qr_data = qr_data_input.strip() if qr_data_input else ''
+        
         size = data.get('size', 10)
         error_correction = data.get('error_correction', 'M')
         
