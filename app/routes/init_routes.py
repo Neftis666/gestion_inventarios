@@ -27,6 +27,27 @@ def create_tables():
         }), 500
 
 
+@init_bp.route('/recreate-tables')
+def recreate_tables():
+    """
+    Elimina y recrea todas las tablas
+    ⚠️ CUIDADO: Esto borra todos los datos
+    Acceder a: /init/recreate-tables
+    """
+    try:
+        db.drop_all()
+        db.create_all()
+        return jsonify({
+            'success': True,
+            'message': 'Tablas recreadas exitosamente (todos los datos fueron eliminados)'
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }), 500
+
+
 @init_bp.route('/init-roles')
 def init_roles():
     """
