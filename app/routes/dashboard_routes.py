@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, session, redirect, url_for, flash, request
-from app.models.user_model import User
+from app.models.user_role_model import User
 from app.models.compra_model import Compra
 from app import db
 from datetime import datetime, timedelta
