@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, send_file
 from app.models.bitacora_model import Bitacora
-from app.models.user_model import User
+from app.models.user_role_model import User
 from app import db
 from datetime import datetime, timedelta
 from io import BytesIO
