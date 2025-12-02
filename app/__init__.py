@@ -174,5 +174,12 @@ def create_app():
             print("✅ Tablas de base de datos creadas/verificadas correctamente")
         except Exception as e:
             print(f"❌ Error al crear tablas: {e}")
-
+# ⚠️ TEMPORAL: Inicialización de base de datos
+        try:
+            from app.routes.init_routes import init_bp
+            app.register_blueprint(init_bp)
+            print("⚠️  Blueprint de inicialización registrado (ELIMINAR DESPUÉS DE USAR)")
+        except ImportError as e:
+            print(f"⚠️ Blueprint de inicialización no encontrado: {e}")
+            
     return app
