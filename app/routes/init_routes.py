@@ -61,7 +61,7 @@ def init_roles():
         # Crear roles
         admin_role = Role(
             name='ADMINISTRADOR',
-            display_name='Administrador',
+            display_name='Administradora',
             description='Acceso total al sistema',
             can_create=True,
             can_edit=True,
@@ -144,7 +144,7 @@ def init_roles():
             can_access_reports=True,
             can_access_full_reports=False,
             can_create_orders=True,
-            can_edit_orders=False,
+            can_edit_orders=True,
             can_create_inventory=False,
             can_edit_inventory=False,
             can_create_barcode=False,
