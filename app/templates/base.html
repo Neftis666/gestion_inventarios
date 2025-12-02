@@ -25,7 +25,6 @@
       transform: translateY(-5px);
       box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     }
-    /* Navbar personalizado azul corporativo */
     .navbar-custom {
       background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -49,10 +48,15 @@
       background-color: white;
       color: #1e3a8a;
     }
-    /* Footer corporativo */
     footer {
       background-color: #1e3a8a;
       color: white;
+    }
+    .role-badge {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 10px;
+      background-color: rgba(255,255,255,0.2);
     }
   </style>
 </head>
@@ -70,58 +74,91 @@
       
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav me-auto">
+          <!-- Dashboard - Todos pueden ver -->
           <li class="nav-item">
             <a class="nav-link {% if request.endpoint and 'dashboard' in request.endpoint %}active{% endif %}" 
                href="{{ url_for('dashboard.dashboard') }}">
               <i class="bi bi-speedometer2"></i> Dashboard
             </a>
           </li>
+          
+          <!-- Compras - Solo ADMINISTRADOR y ASTRID -->
+          {% if session.get('role_name') in ['ADMINISTRADOR', 'ASTRID'] %}
           <li class="nav-item">
             <a class="nav-link {% if request.endpoint and 'compras' in request.endpoint %}active{% endif %}" 
                href="{{ url_for('compras.listar_compras') }}">
               <i class="bi bi-cart-check"></i> Compras
             </a>
           </li>
+          {% endif %}
+          
+          <!-- Inventario - Todos pueden ver, pero con diferentes permisos -->
           <li class="nav-item">
             <a class="nav-link {% if request.endpoint and 'inventario' in request.endpoint %}active{% endif %}" 
                href="{{ url_for('inventario.listar_inventario') }}">
               <i class="bi bi-box-seam"></i> Inventario
             </a>
           </li>
+          
+          <!-- Ventas - Solo ADMINISTRADOR y ASTRID -->
+          {% if session.get('role_name') in ['ADMINISTRADOR', 'ASTRID'] %}
           <li class="nav-item">
             <a class="nav-link {% if request.endpoint and 'ventas' in request.endpoint %}active{% endif %}" 
                href="{{ url_for('ventas.listar_ventas') }}">
               <i class="bi bi-cash-coin"></i> Ventas
             </a>
           </li>
-          <!-- ✨ NUEVO: Módulo de Códigos de Barras -->
+          {% endif %}
+          
+          <!-- Códigos de Barras - Quienes tienen permiso -->
+          {% if session.get('permissions', {}).get('can_create_barcode') or session.get('permissions', {}).get('can_edit_barcode') %}
           <li class="nav-item">
             <a class="nav-link {% if request.endpoint and 'barcode' in request.endpoint %}active{% endif %}" 
                href="{{ url_for('barcode.index') }}">
               <i class="bi bi-upc-scan"></i> Códigos de Barras
             </a>
           </li>
+          {% endif %}
+          
+          <!-- Órdenes - Quienes pueden crear o aprobar -->
+          {% if session.get('permissions', {}).get('can_create_orders') or session.get('permissions', {}).get('can_approve_orders') %}
           <li class="nav-item">
             <a class="nav-link {% if request.endpoint and 'ordenes' in request.endpoint %}active{% endif %}" 
                href="{{ url_for('ordenes.listar_ordenes') }}">
               <i class="bi bi-file-earmark-text"></i> Órdenes De Compra
             </a>
           </li>
+          {% endif %}
+          
+          <!-- Reportes - Quienes tienen acceso a reportes -->
+          {% if session.get('permissions', {}).get('can_access_reports') %}
           <li class="nav-item">
             <a class="nav-link {% if request.endpoint and 'reportes' in request.endpoint %}active{% endif %}" 
                href="{{ url_for('reportes.dashboard_reportes') }}">
               <i class="bi bi-graph-up"></i> Reportes
             </a>
           </li>
+          {% endif %}
+          
+          <!-- Gestión de Usuarios - Solo ADMINISTRADOR -->
+          {% if session.get('permissions', {}).get('can_manage_users') %}
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint and 'usuarios' in request.endpoint %}active{% endif %}" 
+               href="#">
+              <i class="bi bi-people"></i> Usuarios
+            </a>
+          </li>
+          {% endif %}
         </ul>
         
         <div class="d-flex align-items-center">
           {% if session.get('username') %}
             <span class="navbar-text text-white me-3">
               <i class="bi bi-person-circle"></i> {{ session.get('username') }}
+              <span class="role-badge ms-1">{{ session.get('role_display', '') }}</span>
             </span>
-            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light">
-              <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light btn-sm">
+              <i class="bi bi-box-arrow-right"></i> Salir
             </a>
           {% else %}
             <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light">
