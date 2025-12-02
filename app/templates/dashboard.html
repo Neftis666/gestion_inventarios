@@ -1,16 +1,173 @@
-
 {% extends "base.html" %}
 {% block content %}
 <div class="container mt-4">
   <h2>📊 Panel Principal</h2>
   <p class="text-muted">
     Bienvenido, <strong>{{ session.get('full_name', session.get('username')) }}</strong> 
-    | Rol: <span class="badge bg-secondary">{{ session.get('role_display', 'Usuario') }}</span>
+    | Rol: <span class="badge bg-{{ 'primary' if session.get('role_name') == 'ADMINISTRADOR' else 'info' if session.get('role_name') == 'ASTRID' else 'success' if session.get('role_name') == 'JUAN_ANDRES' else 'secondary' }}">{{ session.get('role_display', 'Usuario') }}</span>
   </p>
+
+  <!-- ============================================================ -->
+  <!-- VISTA ESPECÍFICA PARA COMERCIAL -->
+  <!-- ============================================================ -->
+  {% if session.get('role_name') == 'COMERCIAL' %}
+  
+  <div class="alert alert-info mt-3">
+    <i class="bi bi-info-circle"></i> Tu rol te permite <strong>crear órdenes de compra</strong> y <strong>consultar el inventario</strong>.
+  </div>
+
+  <div class="row mt-4">
+    <!-- Tarjeta principal: Crear Orden -->
+    <div class="col-md-6 mb-4">
+      <div class="card shadow border-primary h-100">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0"><i class="bi bi-file-earmark-plus"></i> Crear Orden de Compra</h4>
+        </div>
+        <div class="card-body text-center d-flex flex-column justify-content-center">
+          <p class="text-muted mb-4">Genera una nueva solicitud de orden de compra para que sea aprobada.</p>
+          <a href="{{ url_for('ordenes.nueva_orden') }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Nueva Orden de Compra
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Tarjeta: Ver mis órdenes -->
+    <div class="col-md-6 mb-4">
+      <div class="card shadow border-info h-100">
+        <div class="card-header bg-info text-white">
+          <h4 class="mb-0"><i class="bi bi-list-check"></i> Mis Órdenes</h4>
+        </div>
+        <div class="card-body text-center d-flex flex-column justify-content-center">
+          <p class="text-muted mb-4">Revisa el estado de tus órdenes de compra.</p>
+          <a href="{{ url_for('ordenes.listar_ordenes') }}" class="btn btn-info btn-lg text-white">
+            <i class="bi bi-eye"></i> Ver Mis Órdenes
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Tarjeta: Consultar Inventario -->
+    <div class="col-md-12 mb-4">
+      <div class="card shadow border-secondary">
+        <div class="card-header bg-secondary text-white">
+          <h4 class="mb-0"><i class="bi bi-box-seam"></i> Consultar Inventario</h4>
+        </div>
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <p class="text-muted mb-0">Consulta los productos disponibles en el inventario para incluirlos en tus órdenes.</p>
+            </div>
+            <div class="col-md-4 text-end">
+              <a href="{{ url_for('inventario.listar_inventario') }}" class="btn btn-secondary">
+                <i class="bi bi-search"></i> Ver Inventario
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resumen para Comercial -->
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card shadow-sm text-center p-4">
+        <h5 class="text-muted">📦 Productos en Inventario</h5>
+        <h1 class="text-warning">{{ total_productos }}</h1>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card shadow-sm text-center p-4">
+        <h5 class="text-muted">📋 Órdenes Pendientes</h5>
+        <h1 class="text-info">{{ ordenes_pendientes }}</h1>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- VISTA PARA JUAN_ANDRES -->
+  <!-- ============================================================ -->
+  {% elif session.get('role_name') == 'JUAN_ANDRES' %}
   
   <!-- Tarjetas de resumen -->
   <div class="row text-center mt-4">
-    <!-- Usuarios - Solo ADMINISTRADOR -->
+    <div class="col-md-4">
+      <div class="card shadow-sm p-3 border-warning">
+        <h4>📦 Productos</h4>
+        <h2 class="text-warning">{{ total_productos }}</h2>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm p-3 border-danger">
+        <h4>⚠️ Stock Crítico</h4>
+        <h2 class="text-danger">{{ stock_critico }}</h2>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm p-3 border-info">
+        <h4>📋 Órdenes Pendientes</h4>
+        <h2 class="text-info">{{ ordenes_pendientes }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <!-- Alertas -->
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-danger text-white">
+          <h5 class="mb-0">⚠️ Alertas de Inventario</h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-group list-group-flush">
+            {% if stock_critico > 0 %}
+            <li class="list-group-item list-group-item-danger">
+              <strong>{{ stock_critico }}</strong> productos con stock crítico
+              <a href="{{ url_for('inventario.listar_inventario') }}" class="float-end btn btn-sm btn-danger">Ver</a>
+            </li>
+            {% endif %}
+            {% if stock_bajo > 0 %}
+            <li class="list-group-item list-group-item-warning">
+              <strong>{{ stock_bajo }}</strong> productos con stock bajo
+            </li>
+            {% endif %}
+            {% if stock_critico == 0 and stock_bajo == 0 %}
+            <li class="list-group-item list-group-item-success">
+              ✅ Inventario en buen estado
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Accesos rápidos -->
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">🚀 Accesos Rápidos</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <a href="{{ url_for('inventario.nuevo_producto') }}" class="btn btn-warning">📦 Nuevo Producto</a>
+            <a href="{{ url_for('inventario.listar_inventario') }}" class="btn btn-outline-warning">📋 Ver Inventario</a>
+            <a href="{{ url_for('barcode.index') }}" class="btn btn-outline-secondary">🏷️ Códigos de Barras</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- VISTA PARA ADMINISTRADOR Y ASTRID (completa) -->
+  <!-- ============================================================ -->
+  {% else %}
+  
+  <!-- Tarjetas de resumen completas -->
+  <div class="row text-center mt-4">
     {% if session.get('permissions', {}).get('can_manage_users') %}
     <div class="col-md-3">
       <div class="card shadow-sm p-3 border-primary">
@@ -20,27 +177,20 @@
     </div>
     {% endif %}
     
-    <!-- Compras - ADMINISTRADOR, ASTRID -->
-    {% if session.get('role_name') in ['ADMINISTRADOR', 'ASTRID'] %}
     <div class="col-md-3">
       <div class="card shadow-sm p-3 border-info">
         <h4>🧾 Compras</h4>
         <h2 class="text-info">{{ total_compras }}</h2>
       </div>
     </div>
-    {% endif %}
     
-    <!-- Ventas - Todos excepto COMERCIAL solo ve cantidad -->
-    {% if session.get('permissions', {}).get('can_access_reports') %}
     <div class="col-md-3">
       <div class="card shadow-sm p-3 border-success">
         <h4>💲 Ventas</h4>
         <h2 class="text-success">{{ total_ventas }}</h2>
       </div>
     </div>
-    {% endif %}
     
-    <!-- Productos - Todos pueden ver -->
     <div class="col-md-3">
       <div class="card shadow-sm p-3 border-warning">
         <h4>📦 Productos</h4>
@@ -48,10 +198,31 @@
       </div>
     </div>
   </div>
-  
-  <!-- Alertas - Solo quienes pueden aprobar órdenes o editar inventario -->
-  {% if session.get('permissions', {}).get('can_approve_orders') or session.get('permissions', {}).get('can_edit_inventory') %}
+
+  <!-- Segunda fila de métricas -->
+  <div class="row text-center mt-3">
+    <div class="col-md-4">
+      <div class="card shadow-sm p-3 border-danger">
+        <h5>⚠️ Stock Crítico</h5>
+        <h3 class="text-danger">{{ stock_critico }}</h3>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm p-3 border-warning">
+        <h5>📉 Stock Bajo</h5>
+        <h3 class="text-warning">{{ stock_bajo }}</h3>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm p-3 border-info">
+        <h5>📋 Órdenes Pendientes</h5>
+        <h3 class="text-info">{{ ordenes_pendientes }}</h3>
+      </div>
+    </div>
+  </div>
+
   <div class="row mt-4">
+    <!-- Alertas -->
     <div class="col-md-6">
       <div class="card shadow-sm">
         <div class="card-header bg-danger text-white">
@@ -59,13 +230,13 @@
         </div>
         <div class="card-body">
           <ul class="list-group list-group-flush">
-            {% if stock_critico > 0 and session.get('permissions', {}).get('can_edit_inventory') %}
+            {% if stock_critico > 0 %}
             <li class="list-group-item list-group-item-danger">
               <strong>{{ stock_critico }}</strong> productos con stock crítico
               <a href="{{ url_for('inventario.listar_inventario') }}" class="float-end btn btn-sm btn-danger">Ver</a>
             </li>
             {% endif %}
-            {% if ordenes_pendientes > 0 and session.get('permissions', {}).get('can_approve_orders') %}
+            {% if ordenes_pendientes > 0 %}
             <li class="list-group-item list-group-item-warning">
               <strong>{{ ordenes_pendientes }}</strong> órdenes pendientes de aprobar
               <a href="{{ url_for('ordenes.listar_ordenes') }}" class="float-end btn btn-sm btn-warning">Ver</a>
@@ -89,49 +260,19 @@
         </div>
         <div class="card-body">
           <div class="d-grid gap-2">
-            <!-- Nueva Compra - Solo ADMINISTRADOR y ASTRID -->
-            {% if session.get('role_name') in ['ADMINISTRADOR', 'ASTRID'] %}
             <a href="{{ url_for('compras.nueva_compra') }}" class="btn btn-primary">🧾 Nueva Compra</a>
-            {% endif %}
-            
-            <!-- Nueva Venta - ADMINISTRADOR, ASTRID -->
-            {% if session.get('role_name') in ['ADMINISTRADOR', 'ASTRID'] %}
             <a href="{{ url_for('ventas.nueva_venta') }}" class="btn btn-success">💲 Nueva Venta</a>
-            {% endif %}
-            
-            <!-- Nuevo Producto - Quienes pueden crear inventario -->
-            {% if session.get('permissions', {}).get('can_create_inventory') %}
             <a href="{{ url_for('inventario.nuevo_producto') }}" class="btn btn-warning">📦 Nuevo Producto</a>
-            {% endif %}
-            
-            <!-- Nueva Orden - Quienes pueden crear órdenes -->
-            {% if session.get('permissions', {}).get('can_create_orders') %}
             <a href="{{ url_for('ordenes.nueva_orden') }}" class="btn btn-info">📑 Nueva Orden</a>
+            {% if session.get('permissions', {}).get('can_manage_users') %}
+            <a href="{{ url_for('usuarios.listar_usuarios') }}" class="btn btn-outline-primary">👤 Gestionar Usuarios</a>
             {% endif %}
           </div>
         </div>
       </div>
     </div>
   </div>
-  {% else %}
-  <!-- Vista simplificada para COMERCIAL -->
-  <div class="row mt-4">
-    <div class="col-md-12">
-      <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
-          <h5 class="mb-0">🚀 Accesos Rápidos</h5>
-        </div>
-        <div class="card-body">
-          <div class="d-grid gap-2">
-            {% if session.get('permissions', {}).get('can_create_orders') %}
-            <a href="{{ url_for('ordenes.nueva_orden') }}" class="btn btn-info">📑 Nueva Orden</a>
-            {% endif %}
-            <a href="{{ url_for('inventario.listar_inventario') }}" class="btn btn-secondary">📦 Ver Inventario</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  
   {% endif %}
 </div>
 {% endblock %}
