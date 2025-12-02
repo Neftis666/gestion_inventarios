@@ -1,0 +1,621 @@
+{% extends "base.html" %}
+
+{% block title %}Sistema de Códigos de Barras{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Encabezado del módulo -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">
+                                <i class="fas fa-barcode me-2"></i>
+                                Sistema de Códigos de Barras
+                            </h2>
+                            <p class="text-muted mb-0">Gestiona productos mediante escaneo de códigos</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" onclick="showSection('scan')">
+                                <i class="fas fa-search me-2"></i>Escanear
+                            </button>
+                            <button class="btn btn-success" onclick="showSection('create')">
+                                <i class="fas fa-plus me-2"></i>Nuevo Producto
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs de navegación -->
+            <ul class="nav nav-tabs mb-4" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="scan-tab" data-bs-toggle="tab" data-bs-target="#scan-content" type="button">
+                        <i class="fas fa-qrcode me-2"></i>Escanear Producto
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="create-tab" data-bs-toggle="tab" data-bs-target="#create-content" type="button">
+                        <i class="fas fa-box me-2"></i>Crear Producto
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="inventory-tab" data-bs-toggle="tab" data-bs-target="#inventory-content" type="button">
+                        <i class="fas fa-dolly me-2"></i>Movimientos
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products-content" type="button">
+                        <i class="fas fa-list me-2"></i>Productos
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="stats-tab" data-bs-toggle="tab" data-bs-target="#stats-content" type="button">
+                        <i class="fas fa-chart-bar me-2"></i>Estadísticas
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Contenido de los tabs -->
+            <div class="tab-content">
+                <!-- TAB 1: ESCANEAR PRODUCTO -->
+                <div class="tab-pane fade show active" id="scan-content">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0"><i class="fas fa-scanner me-2"></i>Escanear Código</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Lector USB:</strong> Conecta tu lector y escanea directamente
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="scanInput" class="form-label">Código de Barras</label>
+                                        <input 
+                                            type="text" 
+                                            class="form-control form-control-lg" 
+                                            id="scanInput" 
+                                            placeholder="Escanea o ingresa el código aquí..."
+                                            autofocus
+                                        >
+                                    </div>
+                                    
+                                    <button class="btn btn-primary btn-lg w-100" onclick="searchProduct()">
+                                        <i class="fas fa-search me-2"></i>Buscar Producto
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-6">
+                            <div id="scanResult"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: CREAR PRODUCTO -->
+                <div class="tab-pane fade" id="create-content">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Crear Nuevo Producto</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="createProductForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Nombre del Producto *</label>
+                                            <input type="text" class="form-control" id="productName" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">SKU</label>
+                                            <input type="text" class="form-control" id="productSKU">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Descripción</label>
+                                    <textarea class="form-control" id="productDescription" rows="3"></textarea>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Precio de Venta *</label>
+                                            <input type="number" class="form-control" id="productPrice" step="0.01" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Costo *</label>
+                                            <input type="number" class="form-control" id="productCost" step="0.01" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Stock Inicial</label>
+                                            <input type="number" class="form-control" id="productStock" value="0">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Stock Mínimo</label>
+                                            <input type="number" class="form-control" id="productMinStock" value="10">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Categoría</label>
+                                            <input type="text" class="form-control" id="productCategory">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Proveedor</label>
+                                            <input type="text" class="form-control" id="productSupplier">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Código de Barras (dejar vacío para generar automático)</label>
+                                    <input type="text" class="form-control" id="productBarcode">
+                                    <small class="text-muted">Se generará un código EAN-13 válido automáticamente</small>
+                                </div>
+
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-check me-2"></i>Crear Producto
+                                </button>
+                            </form>
+
+                            <div id="createResult" class="mt-3"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: MOVIMIENTOS -->
+                <div class="tab-pane fade" id="inventory-content">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0"><i class="fas fa-arrow-down me-2"></i>Entrada de Inventario</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Código de Barras</label>
+                                        <input type="text" class="form-control" id="entryBarcode" placeholder="Escanea código">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Cantidad</label>
+                                        <input type="number" class="form-control" id="entryQuantity" value="1" min="1">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Motivo</label>
+                                        <input type="text" class="form-control" id="entryReason" placeholder="Ej: Compra, Devolución">
+                                    </div>
+                                    <button class="btn btn-success w-100" onclick="registerEntry()">
+                                        <i class="fas fa-check me-2"></i>Registrar Entrada
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="card border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <h5 class="mb-0"><i class="fas fa-arrow-up me-2"></i>Salida de Inventario</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Código de Barras</label>
+                                        <input type="text" class="form-control" id="exitBarcode" placeholder="Escanea código">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Cantidad</label>
+                                        <input type="number" class="form-control" id="exitQuantity" value="1" min="1">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Motivo</label>
+                                        <input type="text" class="form-control" id="exitReason" placeholder="Ej: Venta, Defecto">
+                                    </div>
+                                    <button class="btn btn-danger w-100" onclick="registerExit()">
+                                        <i class="fas fa-times me-2"></i>Registrar Salida
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="inventoryResult" class="mt-3"></div>
+                </div>
+
+                <!-- TAB 4: LISTA DE PRODUCTOS -->
+                <div class="tab-pane fade" id="products-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="fas fa-boxes me-2"></i>Lista de Productos</h5>
+                                <button class="btn btn-primary btn-sm" onclick="loadProducts()">
+                                    <i class="fas fa-sync me-2"></i>Actualizar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="productsList"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 5: ESTADÍSTICAS -->
+                <div class="tab-pane fade" id="stats-content">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <i class="fas fa-box fa-3x text-primary mb-3"></i>
+                                    <h3 id="totalProducts">-</h3>
+                                    <p class="text-muted mb-0">Total Productos</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                                    <h3 id="lowStockProducts">-</h3>
+                                    <p class="text-muted mb-0">Stock Bajo</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
+                                    <h3 id="outOfStock">-</h3>
+                                    <p class="text-muted mb-0">Sin Stock</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <i class="fas fa-dollar-sign fa-3x text-success mb-3"></i>
+                                    <h3 id="inventoryValue">-</h3>
+                                    <p class="text-muted mb-0">Valor Inventario</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-history me-2"></i>Movimientos Recientes</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="recentMovements"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const API_BASE = '/barcode/api';
+
+// Auto-ejecutar búsqueda al presionar Enter en el campo de escaneo
+document.getElementById('scanInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        searchProduct();
+    }
+});
+
+// Buscar producto por código
+async function searchProduct() {
+    const barcode = document.getElementById('scanInput').value.trim();
+    const resultDiv = document.getElementById('scanResult');
+
+    if (!barcode) {
+        showAlert('Por favor ingresa un código de barras', 'warning');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/scan`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({barcode})
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const p = data.product;
+            const stockClass = p.stock > p.min_stock ? 'success' : p.stock > 0 ? 'warning' : 'danger';
+            
+            resultDiv.innerHTML = `
+                <div class="card border-${stockClass}">
+                    <div class="card-header bg-${stockClass} text-white">
+                        <h5 class="mb-0">✓ Producto Encontrado</h5>
+                    </div>
+                    <div class="card-body">
+                        <h4>${p.name}</h4>
+                        <p class="text-muted">${p.description || 'Sin descripción'}</p>
+                        
+                        <div class="row mt-3">
+                            <div class="col-6">
+                                <p><strong>Código:</strong> ${p.barcode}</p>
+                                <p><strong>SKU:</strong> ${p.sku || 'N/A'}</p>
+                                <p><strong>Categoría:</strong> ${p.category || 'N/A'}</p>
+                            </div>
+                            <div class="col-6">
+                                <p><strong>Precio:</strong> $${p.price.toLocaleString()}</p>
+                                <p><strong>Stock:</strong> <span class="badge bg-${stockClass}">${p.stock} unidades</span></p>
+                                <p><strong>Stock Mínimo:</strong> ${p.min_stock}</p>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary mt-3" onclick="generateLabel(${p.id})">
+                            <i class="fas fa-print me-2"></i>Generar Etiqueta
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('scanInput').value = '';
+            document.getElementById('scanInput').focus();
+        } else {
+            resultDiv.innerHTML = `
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">✗ Producto No Encontrado</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>${data.message}</p>
+                        <p>Código: <strong>${barcode}</strong></p>
+                        <button class="btn btn-success" onclick="document.getElementById('create-tab').click()">
+                            <i class="fas fa-plus me-2"></i>Crear Nuevo Producto
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+    } catch (error) {
+        showAlert('Error al buscar producto: ' + error.message, 'danger');
+    }
+}
+
+// Crear producto
+document.getElementById('createProductForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const productData = {
+        name: document.getElementById('productName').value,
+        description: document.getElementById('productDescription').value,
+        sku: document.getElementById('productSKU').value,
+        price: parseFloat(document.getElementById('productPrice').value),
+        cost: parseFloat(document.getElementById('productCost').value),
+        stock: parseInt(document.getElementById('productStock').value),
+        min_stock: parseInt(document.getElementById('productMinStock').value),
+        category: document.getElementById('productCategory').value,
+        supplier: document.getElementById('productSupplier').value,
+        barcode: document.getElementById('productBarcode').value || null
+    };
+
+    try {
+        const response = await fetch(`${API_BASE}/product/create`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(productData)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showAlert('✓ Producto creado exitosamente', 'success');
+            
+            const resultDiv = document.getElementById('createResult');
+            resultDiv.innerHTML = `
+                <div class="card border-success">
+                    <div class="card-body text-center">
+                        <h4 class="text-success">✓ Producto Creado</h4>
+                        <p><strong>${data.product.name}</strong></p>
+                        <p>Código de Barras: <strong>${data.product.barcode}</strong></p>
+                        ${data.barcode_image ? `<img src="${data.barcode_image}" class="img-fluid mt-3" style="max-width: 400px;">` : ''}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('createProductForm').reset();
+        } else {
+            showAlert('✗ ' + data.message, 'danger');
+        }
+    } catch (error) {
+        showAlert('Error al crear producto: ' + error.message, 'danger');
+    }
+});
+
+// Registrar entrada
+async function registerEntry() {
+    const barcode = document.getElementById('entryBarcode').value.trim();
+    const quantity = parseInt(document.getElementById('entryQuantity').value);
+    const reason = document.getElementById('entryReason').value;
+
+    if (!barcode) {
+        showAlert('Por favor ingresa un código de barras', 'warning');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/inventory/entry`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({barcode, quantity, reason})
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showAlert(`✓ Entrada registrada: ${quantity} unidades de ${data.product.name}`, 'success');
+            document.getElementById('entryBarcode').value = '';
+            document.getElementById('entryQuantity').value = '1';
+            document.getElementById('entryReason').value = '';
+        } else {
+            showAlert('✗ ' + data.message, 'danger');
+        }
+    } catch (error) {
+        showAlert('Error: ' + error.message, 'danger');
+    }
+}
+
+// Registrar salida
+async function registerExit() {
+    const barcode = document.getElementById('exitBarcode').value.trim();
+    const quantity = parseInt(document.getElementById('exitQuantity').value);
+    const reason = document.getElementById('exitReason').value;
+
+    if (!barcode) {
+        showAlert('Por favor ingresa un código de barras', 'warning');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/inventory/exit`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({barcode, quantity, reason})
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showAlert(`✓ Salida registrada: ${quantity} unidades de ${data.product.name}`, 'success');
+            if (data.alert) showAlert(data.alert, 'warning');
+            
+            document.getElementById('exitBarcode').value = '';
+            document.getElementById('exitQuantity').value = '1';
+            document.getElementById('exitReason').value = '';
+        } else {
+            showAlert('✗ ' + data.message, 'danger');
+        }
+    } catch (error) {
+        showAlert('Error: ' + error.message, 'danger');
+    }
+}
+
+// Cargar productos
+async function loadProducts() {
+    try {
+        const response = await fetch(`${API_BASE}/products`);
+        const data = await response.json();
+
+        if (data.success) {
+            const listDiv = document.getElementById('productsList');
+            
+            if (data.products.length === 0) {
+                listDiv.innerHTML = '<p class="text-center text-muted">No hay productos registrados</p>';
+                return;
+            }
+
+            let html = '<div class="table-responsive"><table class="table table-hover">';
+            html += '<thead><tr><th>Código</th><th>Nombre</th><th>SKU</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr></thead><tbody>';
+            
+            data.products.forEach(p => {
+                const stockClass = p.stock > p.min_stock ? 'success' : p.stock > 0 ? 'warning' : 'danger';
+                html += `
+                    <tr>
+                        <td><code>${p.barcode}</code></td>
+                        <td>${p.name}</td>
+                        <td>${p.sku || '-'}</td>
+                        <td>$${p.price.toLocaleString()}</td>
+                        <td><span class="badge bg-${stockClass}">${p.stock}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="generateLabel(${p.id})">
+                                <i class="fas fa-print"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table></div>';
+            listDiv.innerHTML = html;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+// Generar etiqueta
+async function generateLabel(productId) {
+    try {
+        const response = await fetch(`${API_BASE}/generate/label/${productId}`);
+        const data = await response.json();
+
+        if (data.success) {
+            const win = window.open('', '_blank');
+            win.document.write(`
+                <html>
+                    <head><title>Etiqueta de Producto</title></head>
+                    <body style="margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh;">
+                        <img src="${data.image}" style="max-width: 100%;">
+                    </body>
+                </html>
+            `);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+// Cargar estadísticas
+async function loadStats() {
+    try {
+        const response = await fetch(`${API_BASE}/stats/general`);
+        const data = await response.json();
+
+        if (data.success) {
+            document.getElementById('totalProducts').textContent = data.stats.total_products;
+            document.getElementById('lowStockProducts').textContent = data.stats.low_stock_products;
+            document.getElementById('outOfStock').textContent = data.stats.out_of_stock;
+            document.getElementById('inventoryValue').textContent = '$' + data.stats.total_inventory_value.toLocaleString();
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+// Mostrar alertas
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.container-fluid').firstChild);
+    
+    setTimeout(() => alertDiv.remove(), 5000);
+}
+
+// Cargar datos al cambiar de tab
+document.getElementById('products-tab').addEventListener('shown.bs.tab', loadProducts);
+document.getElementById('stats-tab').addEventListener('shown.bs.tab', loadStats);
+
+// Auto-focus en campo de escaneo
+document.getElementById('scanInput').focus();
+</script>
+{% endblock %}
