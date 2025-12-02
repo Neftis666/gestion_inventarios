@@ -20,9 +20,9 @@ def register():
             flash('El usuario ya existe.', 'warning')
             return redirect(url_for('auth.register'))
 
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        new_user = User(username=username, password=hashed_password)
-        
+        new_user = User(username=username, email=f'{username}@temp.com', role_id=1)
+        new_user.set_password(password)
+           
         db.session.add(new_user)
         db.session.commit()
 
@@ -39,7 +39,7 @@ def login():
 
         user = User.query.filter_by(username=username).first()
 
-        if not user or not check_password_hash(user.password, password):
+        if not user or not user.check_password(password):
             flash('Usuario o contraseña incorrectos.', 'danger')
             return redirect(url_for('auth.login'))
 
