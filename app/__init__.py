@@ -50,8 +50,8 @@ def create_app():
     
     # Configuración adicional para producción
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-        'pool_pre_ping': True,        # Verifica conexiones antes de usarlas
-        'pool_recycle': 300,           # Recicla conexiones cada 5 minutos
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
         'pool_size': 10,
         'max_overflow': 20
     }
@@ -65,23 +65,23 @@ def create_app():
     # ==============================
     @app.template_filter('date')
     def format_date(value, format="%d/%m/%Y %H:%M"):
-        """
-        Permite usar {{ variable|date("%d/%m/%Y") }} en plantillas Jinja.
-        Si la variable no es una fecha válida, se devuelve tal cual.
-        """
         try:
             return value.strftime(format)
         except Exception:
             return value
     
     # ==============================
-    # 🔐 Inyectar funciones de permisos en templates
+    # 🔐 Inyectar permisos en templates
     # ==============================
     @app.context_processor
     def utility_processor():
         """Inyecta funciones útiles en todos los templates"""
-        from app.utils.decorators import inject_permissions
-        return inject_permissions()
+        from flask import session
+        return {
+            'has_permission': lambda perm: session.get('permissions', {}).get(perm, False),
+            'has_role': lambda role: session.get('role_name') == role,
+            'has_any_role': lambda roles: session.get('role_name') in roles
+        }
 
     # ==============================
     # 📦 Contexto de aplicación
@@ -119,19 +119,6 @@ def create_app():
         except ImportError as e:
             print(f"⚠️ Modelos de usuarios y roles no encontrados: {e}")
         
-        try:
-            from app.models import inventario_model
-        except ImportError:
-            pass
-        try:
-            from app.models import venta_model
-        except ImportError:
-            pass
-        try:
-            from app.models import orden_model
-        except ImportError:
-            pass
-        
         # 📦 SISTEMA DE CÓDIGOS DE BARRAS: Importar modelos
         try:
             from app.models import product_model
@@ -168,13 +155,22 @@ def create_app():
         except ImportError as e:
             print(f"⚠️ Blueprint de códigos de barras no encontrado: {e}")
 
+        # 🆕 GESTIÓN DE USUARIOS: Registrar blueprint
+        try:
+            from app.routes.user_management_routes import users_bp
+            app.register_blueprint(users_bp)
+            print("✅ Blueprint de gestión de usuarios registrado en /usuarios")
+        except ImportError as e:
+            print(f"⚠️ Blueprint de gestión de usuarios no encontrado: {e}")
+
         # Crear tablas en caso de que no existan
         try:
             db.create_all()
             print("✅ Tablas de base de datos creadas/verificadas correctamente")
         except Exception as e:
             print(f"❌ Error al crear tablas: {e}")
-# ⚠️ TEMPORAL: Inicialización de base de datos
+
+        # ⚠️ TEMPORAL: Inicialización de base de datos
         try:
             from app.routes.init_routes import init_bp
             app.register_blueprint(init_bp)
