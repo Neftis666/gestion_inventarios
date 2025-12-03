@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-shield-lock"></i> Gestión de Roles</h2>
+            <p class="text-muted">Administra los permisos de cada rol</p>
+        </div>
+        <a href="{{ url_for('usuarios.listar_usuarios') }}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left"></i> Volver a Usuarios
+        </a>
+    </div>
+
+    <div class="row">
+        {% for rol in roles %}
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-{{ 'primary' if rol.name == 'ADMINISTRADOR' else 'info' if rol.name == 'ASTRID' else 'success' if rol.name == 'JUAN_ANDRES' else 'secondary' }} text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ rol.display_name }}</h5>
+                    <a href="{{ url_for('usuarios.editar_rol', id=rol.id) }}" class="btn btn-sm btn-light">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">{{ rol.description }}</p>
+                    
+                    <h6 class="mt-3">Permisos Generales:</h6>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="badge bg-{{ 'success' if rol.can_create else 'secondary' }}">
+                            <i class="bi bi-{{ 'check' if rol.can_create else 'x' }}"></i> Crear
+                        </span>
+                        <span class="badge bg-{{ 'success' if rol.can_edit else 'secondary' }}">
+                            <i class="bi bi-{{ 'check' if rol.can_edit else 'x' }}"></i> Editar
+                        </span>
+                        <span class="badge bg-{{ 'success' if rol.can_delete else 'secondary' }}">
+                            <i class="bi bi-{{ 'check' if rol.can_delete else 'x' }}"></i> Eliminar
+                        </span>
+                        <span class="badge bg-{{ 'success' if rol.can_view else 'secondary' }}">
+                            <i class="bi bi-{{ 'check' if rol.can_view else 'x' }}"></i> Ver
+                        </span>
+                    </div>
+                    
+                    <h6>Permisos Específicos:</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-{{ 'success' if rol.can_manage_users else 'secondary' }}">
+                            <i class="bi bi-{{ 'check' if rol.can_manage_users else 'x' }}"></i> Usuarios
+                        </span>
+                        <span class="badge bg-{{ 'success' if rol.can_approve_orders else 'secondary' }}">
+                            <i class="bi bi-{{ 'check' if rol.can_approve_orders else 'x' }}"></i> Aprobar Órdenes
+                        </span>
+                        <span class="badge bg-{{ 'success' if rol.can_create_orders else 'secondary' }}">
+                            <i class="bi bi-{{ 'check' if rol.can_create_orders else 'x' }}"></i> Crear Órdenes
+                        </span>
+                        <span class="badge bg-{{ 'success' if rol.can_access_reports else 'secondary' }}">
+                            <i class="bi bi-{{ 'check' if rol.can_access_reports else 'x' }}"></i> Reportes
+                        </span>
+                        <span class="badge bg-{{ 'success' if rol.can_create_inventory else 'secondary' }}">
+                            <i class="bi bi-{{ 'check' if rol.can_create_inventory else 'x' }}"></i> Inventario
+                        </span>
+                        <span class="badge bg-{{ 'success' if rol.can_create_barcode else 'secondary' }}">
+                            <i class="bi bi-{{ 'check' if rol.can_create_barcode else 'x' }}"></i> Códigos
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
