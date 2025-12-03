@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-shield-lock"></i> Editar Rol: {{ rol.display_name }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre a Mostrar</label>
+                                <input type="text" name="display_name" class="form-control" 
+                                       value="{{ rol.display_name }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Descripción</label>
+                                <input type="text" name="description" class="form-control" 
+                                       value="{{ rol.description or '' }}">
+                            </div>
+                        </div>
+                        
+                        <h5 class="border-bottom pb-2 mb-3">Permisos Generales</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    <input type="checkbox" name="can_create" class="form-check-input" 
+                                           id="can_create" {% if rol.can_create %}checked{% endif %}>
+                                    <label class="form-check-label" for="can_create">Crear</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    <input type="checkbox" name="can_edit" class="form-check-input" 
+                                           id="can_edit" {% if rol.can_edit %}checked{% endif %}>
+                                    <label class="form-check-label" for="can_edit">Editar</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    <input type="checkbox" name="can_delete" class="form-check-input" 
+                                           id="can_delete" {% if rol.can_delete %}checked{% endif %}>
+                                    <label class="form-check-label" for="can_delete">Eliminar</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    <input type="checkbox" name="can_view" class="form-check-input" 
+                                           id="can_view" {% if rol.can_view %}checked{% endif %}>
+                                    <label class="form-check-label" for="can_view">Ver</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h5 class="border-bottom pb-2 mb-3">Permisos de Sistema</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input type="checkbox" name="can_manage_users" class="form-check-input" 
+                                           id="can_manage_users" {% if rol.can_manage_users %}checked{% endif %}>
+                                    <label class="form-check-label" for="can_manage_users">Gestionar Usuarios</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input type="checkbox" name="can_assign_roles" class="form-check-input" 
+                                           id="can_assign_roles" {% if rol.can_assign_roles %}checked{% endif %}>
+                                    <label class="form-check-label" for="can_assign_roles">Asignar Roles</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input type="checkbox" name="can_approve_orders" class="form-check-input" 
+                                           id="can_approve_orders" {% if rol.can_approve_orders %}checked{% endif %}>
+                                    <label class="form-check-label" for="can_approve_orders">Aprobar Órdenes</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h5 class="border-bottom pb-2 mb-3">Permisos de Tareas</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input type="checkbox" name="can_create_tasks" class="form-check-input" 
+                                           id="can_create_tasks" {% if rol.can_create_tasks %}checked{% endif %}>
+                                    <label class="form-check-label" for="can_create_tasks">Crear Tareas</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input type="checkbox" name="can_complete_tasks" class="form-check-input" 
+                                           id="can_complete_tasks" {% if rol.can_complete_tasks %}checked{% endif %}>
+                                    <label class="form-check-label" for="can_complete_tasks">Completar Tareas</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h5 class="border-bottom pb-2 mb-3">Permisos de Reportes</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input type="checkbox" name="can_access_reports" class="form-check-input" 
+                                           id="can_access_reports" {% if rol.can_access_reports %}checked{% endif %}>
+                                    <label class="form-check-label" for="can_access_reports">Acceder a Reportes</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input type="checkbox" name="can_access_full_reports" class="form-check-input" 
+                                           id="can_access_full_reports" {% if rol.can_access_full_reports %}checked{% endif %}>
+                                    <label class="form-check-label" for="can_access_full_reports">Reportes Completos</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h5 class="border-bottom pb-2 mb-3">Permisos por Módulo</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input type="checkbox" name="can_create_orders" class="form-check-input" 
+                                           id="can_create_orders" {% if rol.can_create_orders %}checked{% endif %}>
+                                    <label class="form-check-label" for="can_create_orders">Crear Órdenes</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input type="checkbox" name="can_edit_orders" class="form-check-input" 
+                                           id="can_edit_orders" {% if rol.can_edit_orders %}checked{% endif %}>
+                                    <label class="form-check-label" for="can_edit_orders">Editar Órdenes</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input type="checkbox" name="can_create_inventory" class="form-check-input" 
+                                           id="can_create_inventory" {% if rol.can_create_inventory %}checked{% endif %}>
+                                    <label class="form-check-label" for="can_create_inventory">Crear Inventario</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input type="checkbox" name="can_edit_inventory" class="form-check-input" 
+                                           id="can_edit_inventory" {% if rol.can_edit_inventory %}checked{% endif %}>
+                                    <label class="form-check-label" for="can_edit_inventory">Editar Inventario</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input type="checkbox" name="can_create_barcode" class="form-check-input" 
+                                           id="can_create_barcode" {% if rol.can_create_barcode %}checked{% endif %}>
+                                    <label class="form-check-label" for="can_create_barcode">Crear Códigos</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input type="checkbox" name="can_edit_barcode" class="form-check-input" 
+                                           id="can_edit_barcode" {% if rol.can_edit_barcode %}checked{% endif %}>
+                                    <label class="form-check-label" for="can_edit_barcode">Editar Códigos</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('usuarios.listar_roles') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg"></i> Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
