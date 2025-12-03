@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-people"></i> Gestión de Usuarios</h2>
+            <p class="text-muted">Administra los usuarios del sistema</p>
+        </div>
+        <div>
+            <a href="{{ url_for('usuarios.listar_roles') }}" class="btn btn-outline-primary me-2">
+                <i class="bi bi-shield-lock"></i> Ver Roles
+            </a>
+            <a href="{{ url_for('usuarios.crear_usuario') }}" class="btn btn-primary">
+                <i class="bi bi-person-plus"></i> Nuevo Usuario
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Usuario</th>
+                            <th>Nombre Completo</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Último Acceso</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios %}
+                        <tr>
+                            <td>{{ usuario.id }}</td>
+                            <td><strong>{{ usuario.username }}</strong></td>
+                            <td>{{ usuario.full_name or '-' }}</td>
+                            <td>{{ usuario.email }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'primary' if usuario.role.name == 'ADMINISTRADOR' else 'info' if usuario.role.name == 'ASTRID' else 'success' if usuario.role.name == 'JUAN_ANDRES' else 'secondary' }}">
+                                    {{ usuario.role.display_name }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if usuario.is_active %}
+                                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> Activo</span>
+                                {% else %}
+                                    <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Inactivo</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ usuario.last_login.strftime('%d/%m/%Y %H:%M') if usuario.last_login else 'Nunca' }}</td>
+                            <td class="text-center">
+                                <a href="{{ url_for('usuarios.editar_usuario', id=usuario.id) }}" 
+                                   class="btn btn-sm btn-warning" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                
+                                <form action="{{ url_for('usuarios.toggle_usuario', id=usuario.id) }}" 
+                                      method="POST" class="d-inline">
+                                    <button type="submit" 
+                                            class="btn btn-sm btn-{{ 'secondary' if usuario.is_active else 'success' }}"
+                                            title="{{ 'Desactivar' if usuario.is_active else 'Activar' }}">
+                                        <i class="bi bi-{{ 'pause' if usuario.is_active else 'play' }}"></i>
+                                    </button>
+                                </form>
+                                
+                                {% if usuario.id != session.get('user_id') %}
+                                <form action="{{ url_for('usuarios.eliminar_usuario', id=usuario.id) }}" 
+                                      method="POST" class="d-inline"
+                                      onsubmit="return confirm('¿Estás seguro de eliminar este usuario?')">
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
