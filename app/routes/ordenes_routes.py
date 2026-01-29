@@ -67,10 +67,24 @@ def nueva_orden():
     
     if request.method == 'POST':
         try:
-            proveedor = request.form.get('proveedor')
+            # Campos del cliente (antes proveedor)
+            proveedor = request.form.get('proveedor')  # Mantener nombre interno
             direccion_proveedor = request.form.get('direccion_proveedor')
             telefono_proveedor = request.form.get('telefono_proveedor')
+            
+            # Nuevos campos
+            fecha_emision_str = request.form.get('fecha_emision')
+            numero_orden_cliente = request.form.get('numero_orden_cliente')
+            sucursal_cliente = request.form.get('sucursal_cliente')
             observaciones = request.form.get('observaciones')
+            
+            # Convertir fecha de emisión
+            fecha_emision = None
+            if fecha_emision_str:
+                try:
+                    fecha_emision = datetime.strptime(fecha_emision_str, '%Y-%m-%d').date()
+                except:
+                    fecha_emision = datetime.now().date()
             
             productos = request.form.getlist('producto[]')
             cantidades = request.form.getlist('cantidad[]')
@@ -121,6 +135,9 @@ def nueva_orden():
                 proveedor=proveedor,
                 direccion_proveedor=direccion_proveedor,
                 telefono_proveedor=telefono_proveedor,
+                fecha_emision=fecha_emision,
+                numero_orden_cliente=numero_orden_cliente,
+                sucursal_cliente=sucursal_cliente,
                 subtotal=subtotal,
                 iva=iva,
                 descuento=descuento,
