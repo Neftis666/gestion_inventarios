@@ -44,14 +44,25 @@
               <h4>{{ orden.numero_orden }}</h4>
             </div>
             <div class="col-md-6 mb-3">
-              <label class="text-muted small">Fecha de Emisión</label>
+              <label class="text-muted small">Número Orden Cliente</label>
+              <h4>{{ orden.numero_orden_cliente if orden.numero_orden_cliente else 'N/A' }}</h4>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="text-muted small">Fecha de Orden</label>
               <h4>{{ orden.fecha.strftime('%d/%m/%Y') }}</h4>
             </div>
+            <div class="col-md-6 mb-3">
+              <label class="text-muted small">Fecha de Emisión</label>
+              <h4>{{ orden.fecha_emision.strftime('%d/%m/%Y') if orden.fecha_emision else orden.fecha.strftime('%d/%m/%Y') }}</h4>
+            </div>
             <div class="col-md-12 mb-3">
-              <label class="text-muted small">Proveedor</label>
+              <label class="text-muted small">Cliente</label>
               <h5>{{ orden.proveedor }}</h5>
               {% if orden.direccion_proveedor %}
               <small class="text-muted">📍 {{ orden.direccion_proveedor }}</small><br>
+              {% endif %}
+              {% if orden.sucursal_cliente %}
+              <small class="text-muted">🏢 Sucursal: {{ orden.sucursal_cliente }}</small><br>
               {% endif %}
               {% if orden.telefono_proveedor %}
               <small class="text-muted">📞 {{ orden.telefono_proveedor }}</small>
