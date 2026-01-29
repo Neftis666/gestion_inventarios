@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, send_file
 from app.models.orden_model import OrdenCompra, DetalleOrden
+from app.services.pdf_generator import generate_purchase_order_pdf
 from app import db
 from datetime import datetime
 from io import BytesIO
@@ -221,32 +222,35 @@ def eliminar_orden(id):
 
 @ordenes_bp.route('/generar-pdf/<int:id>')
 def generar_pdf(id):
+    """Genera PDF ejecutivo de la orden de compra"""
     if 'user_id' not in session:
         flash('Debes iniciar sesión primero.', 'warning')
         return redirect(url_for('auth.login'))
     
-    orden = OrdenCompra.query.get_or_404(id)
-    buffer = BytesIO()
-    p = canvas.Canvas(buffer, pagesize=letter)
-    width, height = letter
-    
-    p.setFont("Helvetica-Bold", 22)
-    p.drawString(1*inch, height - 1*inch, "ORDEN DE COMPRA")
-    p.setFont("Helvetica-Bold", 12)
-    p.drawString(1*inch, height - 1.5*inch, "Plataforma Butacors")
-    p.setFont("Helvetica", 10)
-    p.drawString(1*inch, height - 1.7*inch, "NIT: 900.XXX.XXX-X")
-    p.setFont("Helvetica-Bold", 12)
-    p.drawString(5*inch, height - 1.5*inch, f"N° Orden: {orden.numero_orden}")
-    p.setFont("Helvetica", 10)
-    p.drawString(5*inch, height - 1.7*inch, f"Fecha: {orden.fecha.strftime('%d/%m/%Y')}")
-    p.drawString(5*inch, height - 1.9*inch, f"Estado: {orden.estado.upper()}")
-    
-    p.showPage()
-    p.save()
-    buffer.seek(0)
-    
-    return send_file(buffer, as_attachment=True, download_name=f'orden_{orden.numero_orden}.pdf', mimetype='application/pdf')
+    try:
+        # Obtener la orden con sus detalles
+        orden = OrdenCompra.query.get_or_404(id)
+        
+        # Crear buffer para el PDF
+        buffer = BytesIO()
+        
+        # Generar PDF usando el servicio
+        generate_purchase_order_pdf(orden, buffer)
+        
+        # Posicionar el buffer al inicio
+        buffer.seek(0)
+        
+        # Enviar el archivo PDF
+        return send_file(
+            buffer,
+            as_attachment=True,
+            download_name=f'orden_{orden.numero_orden}.pdf',
+            mimetype='application/pdf'
+        )
+        
+    except Exception as e:
+        flash(f'Error al generar PDF: {str(e)}', 'danger')
+        return redirect(url_for('ordenes.detalle_orden', id=id))
 
 @ordenes_bp.route('/reporte', methods=['GET'])
 def reporte_ordenes():
@@ -326,4 +330,4 @@ def generar_reporte_pdf():
     doc.build(elementos)
     buffer.seek(0)
     
-    return send_file(buffer, as_attachment=True, download_name=f"reporte_ordenes_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf", mimetype="application/pdf")
+    return send_file(buffer, as_attachment=True, download_name=f'reporte_ordenes_{datetime.now().strftime("%Y%m%d")}.pdf', mimetype='application/pdf')
