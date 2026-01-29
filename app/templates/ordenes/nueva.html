@@ -6,30 +6,60 @@
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h2>➕ Nueva Orden de Compra</h2>
-          <p class="text-muted">Crea una nueva orden para proveedor</p>
+          <p class="text-muted">Crea una nueva orden para cliente</p>
         </div>
         <a href="{{ url_for('ordenes.listar_ordenes') }}" class="btn btn-secondary">← Volver</a>
       </div>
 
       <form method="POST" action="{{ url_for('ordenes.nueva_orden') }}" id="formOrden">
-        <!-- Información del Proveedor -->
+        <!-- Información de Fechas y Orden del Cliente -->
         <div class="card shadow-sm mb-4">
           <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">🏢 Información del Proveedor</h5>
+            <h5 class="mb-0">📅 Información de la Orden</h5>
           </div>
           <div class="card-body">
             <div class="row g-3">
               <div class="col-md-6">
-                <label for="proveedor" class="form-label">Proveedor <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="proveedor" name="proveedor" required>
+                <label for="fecha_emision" class="form-label">Fecha de Emisión <span class="text-danger">*</span></label>
+                <input type="date" class="form-control" id="fecha_emision" name="fecha_emision" 
+                       value="{{ now.strftime('%Y-%m-%d') if now else '' }}" required>
               </div>
               <div class="col-md-6">
-                <label for="telefono_proveedor" class="form-label">Teléfono</label>
-                <input type="text" class="form-control" id="telefono_proveedor" name="telefono_proveedor">
+                <label for="numero_orden_cliente" class="form-label">Número de Orden del Cliente</label>
+                <input type="text" class="form-control" id="numero_orden_cliente" 
+                       name="numero_orden_cliente" placeholder="Ej: CLI-2026-001">
+                <small class="text-muted">Opcional: Número de orden proporcionado por el cliente</small>
               </div>
-              <div class="col-md-12">
-                <label for="direccion_proveedor" class="form-label">Dirección</label>
-                <input type="text" class="form-control" id="direccion_proveedor" name="direccion_proveedor">
+            </div>
+          </div>
+        </div>
+
+        <!-- Información del Cliente -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">🏢 Información del Cliente</h5>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="proveedor" class="form-label">Cliente <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="proveedor" name="proveedor" 
+                       placeholder="Nombre del cliente" required>
+              </div>
+              <div class="col-md-6">
+                <label for="telefono_proveedor" class="form-label">Teléfono del Cliente</label>
+                <input type="text" class="form-control" id="telefono_proveedor" 
+                       name="telefono_proveedor" placeholder="Ej: 320 824 66 61">
+              </div>
+              <div class="col-md-8">
+                <label for="direccion_proveedor" class="form-label">Dirección del Cliente</label>
+                <input type="text" class="form-control" id="direccion_proveedor" 
+                       name="direccion_proveedor" placeholder="Dirección completa">
+              </div>
+              <div class="col-md-4">
+                <label for="sucursal_cliente" class="form-label">Sucursal</label>
+                <input type="text" class="form-control" id="sucursal_cliente" 
+                       name="sucursal_cliente" placeholder="Ej: Sucursal Centro">
               </div>
             </div>
           </div>
@@ -124,6 +154,15 @@
 </div>
 
 <script>
+// Establecer fecha actual al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+  const fechaInput = document.getElementById('fecha_emision');
+  if (!fechaInput.value) {
+    const today = new Date().toISOString().split('T')[0];
+    fechaInput.value = today;
+  }
+});
+
 function calcularSubtotal(element) {
   const row = element.closest('tr');
   const cantidad = parseFloat(row.querySelector('.cantidad-input').value) || 0;
