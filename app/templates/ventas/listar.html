@@ -100,7 +100,7 @@
               <tr>
                 <td><strong>{{ venta.numero_factura }}</strong></td>
                 <td>{{ venta.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
-                <td>{{ venta.cliente }}</td>
+                <td>{{ venta.cliente.nombre }}</td>
                 <td><span class="badge bg-secondary">{{ venta.vendedor }}</span></td>
                 <td class="text-end"><strong class="text-success">${{ "{:,.2f}".format(venta.total) }}</strong></td>
                 <td>
