@@ -101,7 +101,7 @@
           </li>
           
           <!-- Ventas - Solo ADMINISTRADOR y ASTRID -->
-          {% if session.get('role_name') in ['ADMINISTRADOR', 'ASTRID',ÇOMERCIAL´] %}
+          {% if session.get('role_name') in ['ADMINISTRADOR', 'ASTRID','COMERCIAL'] %}
           <li class="nav-item">
             <a class="nav-link {% if request.endpoint and 'ventas' in request.endpoint %}active{% endif %}" 
                href="{{ url_for('ventas.listar_ventas') }}">
