@@ -1,20 +1,28 @@
 from app import db
 from datetime import datetime
 
+
 class Producto(db.Model):
     __tablename__ = 'productos'
 
     id = db.Column(db.Integer, primary_key=True)
+
+    # ✅ Campos nuevos
+    referencia = db.Column(db.String(100), nullable=True)
+    codigo_interno = db.Column(db.String(50), nullable=True)
+    codigo_equipo = db.Column(db.String(100), nullable=True)
+
+    # Campos existentes (mantenidos)
     codigo = db.Column(db.String(50), unique=True, nullable=False)
     nombre = db.Column(db.String(200), nullable=False)
     descripcion = db.Column(db.Text, nullable=True)
     serial = db.Column(db.String(100), nullable=True)
-    costo_unitario = db.Column(db.Float, nullable=False)
+    costo_unitario = db.Column(db.Float, nullable=False, default=0)
     cantidad = db.Column(db.Integer, default=0)
     estado = db.Column(db.String(20), default='disponible')  # disponible, prestado, dañado
     categoria = db.Column(db.String(100), nullable=True)
     fecha_ingreso = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     # Relación con movimientos
     movimientos = db.relationship('MovimientoInventario', backref='producto', lazy=True, cascade='all, delete-orphan')
 
