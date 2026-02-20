@@ -137,6 +137,17 @@
             </a>
           </li>
           {% endif %}
+
+           <!-- Órdenes de Proveedores - Solo ADMINISTRADOR y ASTRID -->
+          {% if session.get('role_name') in ['ADMINISTRADOR', 'ASTRID'] %}
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint and 'ordenes_proveedor' in request.endpoint %}active{% endif %}" 
+               href="{{ url_for('ordenes_proveedor.listar_ordenes') }}">
+              <i class="bi bi-truck"></i> Órd. Proveedores
+            </a>
+          </li>
+          {% endif %}
+
           
           <!-- Reportes - Quienes tienen acceso a reportes -->
           {% if session.get('permissions', {}).get('can_access_reports') %}
