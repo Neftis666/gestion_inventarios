@@ -11,7 +11,7 @@
     </a>
   </div>
 
-  <!-- Tarjetas de Estadísticas -->
+  <!-- Estadísticas -->
   <div class="row mb-4">
     <div class="col-md-4">
       <div class="card shadow-sm border-primary">
@@ -52,9 +52,9 @@
         <div class="row g-3">
           <div class="col-md-4">
             <label class="form-label">Buscar</label>
-            <input type="text" name="search" class="form-control" placeholder="Código, nombre o descripción" value="{{ search }}">
+            <input type="text" name="search" class="form-control" placeholder="Código, referencia, nombre o descripción" value="{{ search }}">
           </div>
-          <div class="col-md-3">
+          <div class="col-md-2">
             <label class="form-label">Estado</label>
             <select name="estado" class="form-select">
               <option value="">Todos</option>
@@ -72,7 +72,7 @@
               {% endfor %}
             </select>
           </div>
-          <div class="col-md-2 d-flex align-items-end">
+          <div class="col-md-3 d-flex align-items-end">
             <button type="submit" class="btn btn-primary me-2">🔎 Buscar</button>
             <a href="{{ url_for('inventario.listar_inventario') }}" class="btn btn-secondary">🔄</a>
           </div>
@@ -81,7 +81,7 @@
     </div>
   </div>
 
-  <!-- Tabla de Productos -->
+  <!-- Tabla -->
   <div class="card shadow-sm">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
       <h5 class="mb-0">📋 Lista de Productos</h5>
@@ -92,11 +92,12 @@
         <table class="table table-hover table-striped mb-0">
           <thead class="table-dark">
             <tr>
-              <th>Código</th>
+              <th>Referencia</th>
+              <th>Cód. Interno</th>
+              <th>Cód. Equipo</th>
               <th>Nombre</th>
-              <th>Categoría</th>
+              <th>Descripción</th>
               <th class="text-center">Cantidad</th>
-              <th class="text-center">Stock</th>
               <th>Costo Unitario</th>
               <th>Estado</th>
               <th class="text-center">Acciones</th>
@@ -106,21 +107,20 @@
             {% if productos %}
               {% for producto in productos %}
               <tr>
-                <td><strong>{{ producto.codigo }}</strong></td>
+                <td><strong>{{ producto.referencia or '—' }}</strong></td>
+                <td>{{ producto.codigo_interno or '—' }}</td>
+                <td>{{ producto.codigo_equipo or '—' }}</td>
                 <td>{{ producto.nombre }}</td>
-                <td><span class="badge bg-secondary">{{ producto.categoria or 'Sin categoría' }}</span></td>
-                <td class="text-center">
-                  <strong>{{ producto.cantidad }}</strong>
-                </td>
-                <td class="text-center">
-                  {% if producto.nivel_stock == 'suficiente' %}
-                    <span class="badge bg-success">✓ Suficiente</span>
-                  {% elif producto.nivel_stock == 'bajo' %}
-                    <span class="badge bg-warning">⚠ Bajo</span>
+                <td>
+                  {% if producto.descripcion %}
+                    <span title="{{ producto.descripcion }}">
+                      {{ producto.descripcion[:40] }}{% if producto.descripcion|length > 40 %}...{% endif %}
+                    </span>
                   {% else %}
-                    <span class="badge bg-danger">⚠ Crítico</span>
+                    <span class="text-muted">—</span>
                   {% endif %}
                 </td>
+                <td class="text-center"><strong>{{ producto.cantidad }}</strong></td>
                 <td>${{ "{:,.2f}".format(producto.costo_unitario) }}</td>
                 <td>
                   {% if producto.estado == 'disponible' %}
@@ -144,7 +144,7 @@
               {% endfor %}
             {% else %}
               <tr>
-                <td colspan="8" class="text-center py-4">
+                <td colspan="9" class="text-center py-4">
                   <div class="alert alert-info mb-0">
                     <strong>ℹ️ No hay productos registrados</strong><br>
                     <a href="{{ url_for('inventario.nuevo_producto') }}" class="alert-link">Registra tu primer producto aquí</a>
