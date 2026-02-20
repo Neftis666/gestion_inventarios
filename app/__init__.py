@@ -123,12 +123,19 @@ def create_app():
         except ImportError as e:
             print(f"⚠️ Modelo de productos con códigos de barras no encontrado: {e}")
 
-        # ✅ NUEVO: Modelo de proveedores
+        # ✅ Modelo de proveedores
         try:
             from app.models import proveedor_model
             print("✅ Modelo de proveedores cargado")
         except ImportError as e:
             print(f"⚠️ Modelo de proveedores no encontrado: {e}")
+
+        # ✅ NUEVO: Modelo de órdenes de proveedor
+        try:
+            from app.models import orden_proveedor_model
+            print("✅ Modelo de órdenes de proveedor cargado")
+        except ImportError as e:
+            print(f"⚠️ Modelo de órdenes de proveedor no encontrado: {e}")
 
         # ==============================
         # 📂 Registrar Blueprints (rutas)
@@ -167,13 +174,21 @@ def create_app():
         except ImportError as e:
             print(f"⚠️ Blueprint de gestión de usuarios no encontrado: {e}")
 
-        # ✅ NUEVO: Módulo de Proveedores
+        # ✅ Módulo de Proveedores
         try:
             from app.routes.proveedores_routes import proveedores_bp
             app.register_blueprint(proveedores_bp)
             print("✅ Blueprint de proveedores registrado en /proveedores")
         except ImportError as e:
             print(f"⚠️ Blueprint de proveedores no encontrado: {e}")
+
+        # ✅ NUEVO: Módulo de Órdenes de Proveedor
+        try:
+            from app.routes.ordenes_proveedor_routes import ordenes_proveedor_bp
+            app.register_blueprint(ordenes_proveedor_bp)
+            print("✅ Blueprint de órdenes de proveedor registrado en /ordenes-proveedor")
+        except ImportError as e:
+            print(f"⚠️ Blueprint de órdenes de proveedor no encontrado: {e}")
 
         # Crear tablas en caso de que no existan
         try:
