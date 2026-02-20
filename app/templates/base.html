@@ -100,8 +100,8 @@
             </a>
           </li>
           
-          <!-- Ventas - Solo ADMINISTRADOR y ASTRID -->
-          {% if session.get('role_name') in ['ADMINISTRADOR', 'ASTRID','COMERCIAL'] %}
+          <!-- Ventas - Solo ADMINISTRADOR, ASTRID y COMERCIAL -->
+          {% if session.get('role_name') in ['ADMINISTRADOR', 'ASTRID', 'COMERCIAL'] %}
           <li class="nav-item">
             <a class="nav-link {% if request.endpoint and 'ventas' in request.endpoint %}active{% endif %}" 
                href="{{ url_for('ventas.listar_ventas') }}">
@@ -127,6 +127,16 @@
               <i class="bi bi-file-earmark-text"></i> Órdenes De Compra
             </a>
           </li>
+
+          <!-- ✅ NUEVO: Proveedores - Solo ADMINISTRADOR y ASTRID -->
+          {% if session.get('role_name') in ['ADMINISTRADOR', 'ASTRID'] %}
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint and 'proveedores' in request.endpoint %}active{% endif %}" 
+               href="{{ url_for('proveedores.listar_proveedores') }}">
+              <i class="bi bi-building"></i> Proveedores
+            </a>
+          </li>
+          {% endif %}
           
           <!-- Reportes - Quienes tienen acceso a reportes -->
           {% if session.get('permissions', {}).get('can_access_reports') %}
