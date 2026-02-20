@@ -109,16 +109,7 @@
             </a>
           </li>
           {% endif %}
-          
-          <!-- Códigos de Barras - NO para COMERCIAL -->
-          {% if session.get('role_name') != 'COMERCIAL' %}
-          <li class="nav-item">
-            <a class="nav-link {% if request.endpoint and 'barcode' in request.endpoint %}active{% endif %}" 
-               href="{{ url_for('barcode.index') }}">
-              <i class="bi bi-upc-scan"></i> Códigos de Barras
-            </a>
-          </li>
-          {% endif %}
+        
           
           <!-- Órdenes - Todos (COMERCIAL solo crea, otros aprueban) -->
           <li class="nav-item">
