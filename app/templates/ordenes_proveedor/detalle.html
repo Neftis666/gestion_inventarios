@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2>📋 Detalle de Orden</h2>
+      <p class="text-muted">{{ orden.numero_orden }}</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('ordenes_proveedor.listar_ordenes') }}" class="btn btn-secondary">← Volver</a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Info principal -->
+    <div class="col-md-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">🏢 Datos del Proveedor</h5>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <small class="text-muted">Proveedor</small>
+              <p class="fw-bold fs-5">{{ orden.proveedor }}</p>
+            </div>
+            <div class="col-md-6">
+              <small class="text-muted">Dirección</small>
+              <p>{{ orden.direccion_proveedor or '—' }}</p>
+            </div>
+            <div class="col-md-4">
+              <small class="text-muted">Teléfono</small>
+              <p>{{ orden.telefono_proveedor or '—' }}</p>
+            </div>
+            <div class="col-md-4">
+              <small class="text-muted">N° Orden Cliente</small>
+              <p>{{ orden.numero_orden_cliente or '—' }}</p>
+            </div>
+            <div class="col-md-4">
+              <small class="text-muted">Sucursal</small>
+              <p>{{ orden.sucursal_cliente or '—' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Productos -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+          <h5 class="mb-0">📦 Productos</h5>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-striped mb-0">
+              <thead class="table-dark">
+                <tr>
+                  <th>#</th>
+                  <th>Descripción</th>
+                  <th class="text-center">Cantidad</th>
+                  <th class="text-center">Unidad</th>
+                  <th class="text-end">Precio Unit.</th>
+                  <th class="text-end">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for d in orden.detalles %}
+                <tr>
+                  <td>{{ loop.index }}</td>
+                  <td>{{ d.producto_descripcion }}</td>
+                  <td class="text-center">{{ d.cantidad }}</td>
+                  <td class="text-center">{{ d.unidad_medida }}</td>
+                  <td class="text-end">${{ "{:,.2f}".format(d.precio_unitario) }}</td>
+                  <td class="text-end"><strong>${{ "{:,.2f}".format(d.subtotal) }}</strong></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+              <tfoot class="table-light">
+                <tr>
+                  <td colspan="5" class="text-end">Subtotal:</td>
+                  <td class="text-end">${{ "{:,.2f}".format(orden.subtotal) }}</td>
+                </tr>
+                <tr>
+                  <td colspan="5" class="text-end">IVA:</td>
+                  <td class="text-end">${{ "{:,.2f}".format(orden.iva) }}</td>
+                </tr>
+                {% if orden.descuento %}
+                <tr>
+                  <td colspan="5" class="text-end text-danger">Descuento:</td>
+                  <td class="text-end text-danger">-${{ "{:,.2f}".format(orden.descuento) }}</td>
+                </tr>
+                {% endif %}
+                <tr class="table-success">
+                  <td colspan="5" class="text-end"><strong>TOTAL:</strong></td>
+                  <td class="text-end"><strong>${{ "{:,.2f}".format(orden.total) }}</strong></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel lateral -->
+    <div class="col-md-4">
+      <!-- Estado -->
+      <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light">
+          <h6 class="mb-0">📊 Estado de la Orden</h6>
+        </div>
+        <div class="card-body text-center">
+          {% if orden.estado == 'pendiente' %}
+            <span class="badge bg-warning fs-5 p-2">⏳ Pendiente</span>
+          {% elif orden.estado == 'aprobada' %}
+            <span class="badge bg-info fs-5 p-2">✅ Aprobada</span>
+          {% elif orden.estado == 'completada' %}
+            <span class="badge bg-success fs-5 p-2">🏁 Completada</span>
+          {% else %}
+            <span class="badge bg-danger fs-5 p-2">❌ Cancelada</span>
+          {% endif %}
+          <hr>
+          <form method="POST" action="{{ url_for('ordenes_proveedor.cambiar_estado', id=orden.id) }}">
+            <select name="estado" class="form-select mb-2">
+              <option value="pendiente" {% if orden.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+              <option value="aprobada" {% if orden.estado == 'aprobada' %}selected{% endif %}>Aprobada</option>
+              <option value="completada" {% if orden.estado == 'completada' %}selected{% endif %}>Completada</option>
+              <option value="cancelada" {% if orden.estado == 'cancelada' %}selected{% endif %}>Cancelada</option>
+            </select>
+            <button type="submit" class="btn btn-outline-primary btn-sm w-100">Actualizar Estado</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Info del registro -->
+      <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light">
+          <h6 class="mb-0">ℹ️ Información del Registro</h6>
+        </div>
+        <div class="card-body">
+          <small class="text-muted">N° Orden</small>
+          <p class="fw-bold">{{ orden.numero_orden }}</p>
+          <small class="text-muted">Fecha</small>
+          <p>{{ orden.fecha.strftime('%d/%m/%Y %H:%M') }}</p>
+          <small class="text-muted">Elaborado por</small>
+          <p><span class="badge bg-secondary">{{ orden.elaborado_por or '—' }}</span></p>
+          {% if orden.verificado_por %}
+          <small class="text-muted">Verificado por</small>
+          <p><span class="badge bg-info">{{ orden.verificado_por }}</span></p>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if orden.observaciones %}
+      <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light">
+          <h6 class="mb-0">📝 Observaciones</h6>
+        </div>
+        <div class="card-body">
+          <p class="mb-0">{{ orden.observaciones }}</p>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Eliminar -->
+      {% if orden.estado != 'completada' %}
+      <form method="POST" action="{{ url_for('ordenes_proveedor.eliminar_orden', id=orden.id) }}"
+            onsubmit="return confirm('¿Eliminar la orden {{ orden.numero_orden }}?');">
+        <button type="submit" class="btn btn-danger w-100">🗑️ Eliminar Orden</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
