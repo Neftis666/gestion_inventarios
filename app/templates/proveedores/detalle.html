@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2>👁️ Detalle del Proveedor</h2>
+      <p class="text-muted">Información completa de: <strong>{{ proveedor.nombre }}</strong></p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('proveedores.editar_proveedor', id=proveedor.id) }}" class="btn btn-warning">✏️ Editar</a>
+      <a href="{{ url_for('proveedores.listar_proveedores') }}" class="btn btn-secondary">← Volver</a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Información principal -->
+    <div class="col-md-8">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">🏢 Información del Proveedor</h5>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <small class="text-muted">Nombre / Razón Social</small>
+              <p class="fw-bold fs-5">{{ proveedor.nombre }}</p>
+            </div>
+            <div class="col-md-3">
+              <small class="text-muted">NIT</small>
+              <p class="fw-bold">{{ proveedor.nit or '—' }}</p>
+            </div>
+            <div class="col-md-3">
+              <small class="text-muted">Tipo</small>
+              <p>
+                {% if proveedor.tipo == 'Nacional' %}
+                  <span class="badge bg-info fs-6">🇨🇴 Nacional</span>
+                {% else %}
+                  <span class="badge bg-secondary fs-6">🌐 Internacional</span>
+                {% endif %}
+              </p>
+            </div>
+            <div class="col-md-6">
+              <small class="text-muted">Dirección</small>
+              <p>{{ proveedor.direccion or '—' }}</p>
+            </div>
+            <div class="col-md-3">
+              <small class="text-muted">Teléfono</small>
+              <p>{{ proveedor.telefono or '—' }}</p>
+            </div>
+            <div class="col-md-3">
+              <small class="text-muted">Email</small>
+              <p>{{ proveedor.email or '—' }}</p>
+            </div>
+            <div class="col-md-6">
+              <small class="text-muted">Persona de Contacto</small>
+              <p>{{ proveedor.contacto_nombre or '—' }}</p>
+            </div>
+          </div>
+
+          {% if proveedor.observaciones %}
+          <hr>
+          <small class="text-muted">Observaciones</small>
+          <p>{{ proveedor.observaciones }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel lateral -->
+    <div class="col-md-4">
+      <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light">
+          <h6 class="mb-0">📊 Estado del Proveedor</h6>
+        </div>
+        <div class="card-body text-center">
+          {% if proveedor.estado == 'activo' %}
+            <span class="badge bg-success fs-5 p-2">✅ Activo</span>
+          {% else %}
+            <span class="badge bg-danger fs-5 p-2">❌ Inactivo</span>
+          {% endif %}
+          <hr>
+          <!-- Cambiar estado rápido -->
+          <form method="POST" action="{{ url_for('proveedores.cambiar_estado', id=proveedor.id) }}">
+            <select name="estado" class="form-select mb-2">
+              <option value="activo" {% if proveedor.estado == 'activo' %}selected{% endif %}>Activo</option>
+              <option value="inactivo" {% if proveedor.estado == 'inactivo' %}selected{% endif %}>Inactivo</option>
+            </select>
+            <button type="submit" class="btn btn-outline-primary btn-sm w-100">Actualizar Estado</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          <h6 class="mb-0">ℹ️ Información del Registro</h6>
+        </div>
+        <div class="card-body">
+          <small class="text-muted">Registrado por</small>
+          <p><span class="badge bg-secondary">{{ proveedor.registrado_por or '—' }}</span></p>
+          <small class="text-muted">Fecha de registro</small>
+          <p>{{ proveedor.fecha_registro.strftime('%d/%m/%Y %H:%M') if proveedor.fecha_registro else '—' }}</p>
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div class="d-grid gap-2 mt-3">
+        <form method="POST" action="{{ url_for('proveedores.eliminar_proveedor', id=proveedor.id) }}"
+              onsubmit="return confirm('¿Estás seguro de eliminar a {{ proveedor.nombre }}?');">
+          <button type="submit" class="btn btn-danger w-100">🗑️ Eliminar Proveedor</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
