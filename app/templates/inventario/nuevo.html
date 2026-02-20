@@ -1,80 +1,90 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container mt-4">
-  <div class="row justify-content-center">
-    <div class="col-md-10">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2>➕ Agregar Nuevo Producto</h2>
-          <p class="text-muted">Registra un nuevo producto en el inventario</p>
-        </div>
-        <a href="{{ url_for('inventario.listar_inventario') }}" class="btn btn-secondary">← Volver</a>
-      </div>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2>➕ Nuevo Producto</h2>
+      <p class="text-muted">Registrar un nuevo producto al inventario</p>
+    </div>
+    <a href="{{ url_for('inventario.listar_inventario') }}" class="btn btn-secondary">← Volver</a>
+  </div>
 
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">📋 Datos del Producto</h5>
+    </div>
+    <div class="card-body">
       <form method="POST" action="{{ url_for('inventario.nuevo_producto') }}">
-        <div class="card shadow-sm mb-4">
-          <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">📋 Información Básica</h5>
+        <div class="row g-3">
+
+          <!-- Códigos e identificación -->
+          <div class="col-12"><h6 class="text-muted">🔖 Identificación</h6><hr class="mt-1"></div>
+
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Código <span class="text-danger">*</span></label>
+            <input type="text" name="codigo" class="form-control" placeholder="Ej: PROD-001" required>
+            <small class="text-muted">Código único del producto</small>
           </div>
-          <div class="card-body">
-            <div class="row g-3">
-              <div class="col-md-4">
-                <label for="codigo" class="form-label">Código <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="codigo" name="codigo" required>
-                <small class="text-muted">Código único del producto</small>
-              </div>
-              <div class="col-md-8">
-                <label for="nombre" class="form-label">Nombre <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="nombre" name="nombre" required>
-              </div>
-              <div class="col-md-12">
-                <label for="descripcion" class="form-label">Descripción</label>
-                <textarea class="form-control" id="descripcion" name="descripcion" rows="3"></textarea>
-              </div>
-              <div class="col-md-6">
-                <label for="categoria" class="form-label">Categoría</label>
-                <input type="text" class="form-control" id="categoria" name="categoria" placeholder="Ej: Electrónica, Oficina, etc.">
-              </div>
-              <div class="col-md-6">
-                <label for="serial" class="form-label">Serial / Lote</label>
-                <input type="text" class="form-control" id="serial" name="serial">
-              </div>
-            </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Referencia</label>
+            <input type="text" name="referencia" class="form-control" placeholder="Ej: REF-2024-001">
+            <small class="text-muted">Referencia comercial</small>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Código Interno</label>
+            <input type="text" name="codigo_interno" class="form-control" placeholder="Ej: CI-001">
+            <small class="text-muted">Código interno de la empresa</small>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Código Equipo</label>
+            <input type="text" name="codigo_equipo" class="form-control" placeholder="Ej: EQ-2024-001">
+            <small class="text-muted">Código del equipo/activo</small>
+          </div>
+
+          <!-- Información general -->
+          <div class="col-12 mt-2"><h6 class="text-muted">📦 Información General</h6><hr class="mt-1"></div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Nombre <span class="text-danger">*</span></label>
+            <input type="text" name="nombre" class="form-control" placeholder="Nombre del producto" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Categoría</label>
+            <input type="text" name="categoria" class="form-control" placeholder="Ej: Instrumentación">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Serial</label>
+            <input type="text" name="serial" class="form-control" placeholder="Número de serie">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold">Descripción</label>
+            <textarea name="descripcion" class="form-control" rows="3" placeholder="Descripción detallada del producto..."></textarea>
+          </div>
+
+          <!-- Cantidad y costo -->
+          <div class="col-12 mt-2"><h6 class="text-muted">💰 Stock y Costos</h6><hr class="mt-1"></div>
+
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Cantidad Inicial</label>
+            <input type="number" name="cantidad" class="form-control" value="0" min="0">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Costo Unitario ($)</label>
+            <input type="number" name="costo_unitario" class="form-control" step="0.01" min="0" value="0">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Estado</label>
+            <select name="estado" class="form-select">
+              <option value="disponible">✅ Disponible</option>
+              <option value="prestado">🔄 Prestado</option>
+              <option value="dañado">❌ Dañado</option>
+            </select>
           </div>
         </div>
 
-        <div class="card shadow-sm mb-4">
-          <div class="card-header bg-success text-white">
-            <h5 class="mb-0">📦 Detalles de Stock</h5>
-          </div>
-          <div class="card-body">
-            <div class="row g-3">
-              <div class="col-md-4">
-                <label for="cantidad" class="form-label">Cantidad Inicial <span class="text-danger">*</span></label>
-                <input type="number" class="form-control" id="cantidad" name="cantidad" min="0" value="0" required>
-              </div>
-              <div class="col-md-4">
-                <label for="costo_unitario" class="form-label">Costo Unitario <span class="text-danger">*</span></label>
-                <div class="input-group">
-                  <span class="input-group-text">$</span>
-                  <input type="number" class="form-control" id="costo_unitario" name="costo_unitario" step="0.01" min="0" value="0" required>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <label for="estado" class="form-label">Estado <span class="text-danger">*</span></label>
-                <select class="form-select" id="estado" name="estado" required>
-                  <option value="disponible" selected>Disponible</option>
-                  <option value="prestado">Prestado</option>
-                  <option value="dañado">Dañado</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="d-flex justify-content-between mb-5">
-          <a href="{{ url_for('inventario.listar_inventario') }}" class="btn btn-secondary btn-lg">✖️ Cancelar</a>
-          <button type="submit" class="btn btn-success btn-lg">✅ Registrar Producto</button>
+        <div class="d-flex justify-content-end mt-4 gap-2">
+          <a href="{{ url_for('inventario.listar_inventario') }}" class="btn btn-secondary">Cancelar</a>
+          <button type="submit" class="btn btn-success btn-lg">💾 Guardar Producto</button>
         </div>
       </form>
     </div>
