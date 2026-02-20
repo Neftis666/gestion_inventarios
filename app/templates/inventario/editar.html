@@ -1,69 +1,87 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container mt-4">
-  <div class="row justify-content-center">
-    <div class="col-md-10">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2>✏️ Editar Producto</h2>
-          <p class="text-muted">Código: <strong>{{ producto.codigo }}</strong></p>
-        </div>
-        <a href="{{ url_for('inventario.listar_inventario') }}" class="btn btn-secondary">← Volver</a>
-      </div>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2>✏️ Editar Producto</h2>
+      <p class="text-muted">Modificar: <strong>{{ producto.nombre }}</strong></p>
+    </div>
+    <a href="{{ url_for('inventario.listar_inventario') }}" class="btn btn-secondary">← Volver</a>
+  </div>
 
+  <div class="card shadow-sm">
+    <div class="card-header bg-warning">
+      <h5 class="mb-0">📋 Datos del Producto</h5>
+    </div>
+    <div class="card-body">
       <form method="POST" action="{{ url_for('inventario.editar_producto', id=producto.id) }}">
-        <div class="card shadow-sm mb-4">
-          <div class="card-header bg-warning text-dark">
-            <h5 class="mb-0">📋 Información del Producto</h5>
+        <div class="row g-3">
+
+          <!-- Identificación -->
+          <div class="col-12"><h6 class="text-muted">🔖 Identificación</h6><hr class="mt-1"></div>
+
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Código</label>
+            <input type="text" class="form-control bg-light" value="{{ producto.codigo }}" disabled>
+            <small class="text-muted">El código no se puede modificar</small>
           </div>
-          <div class="card-body">
-            <div class="row g-3">
-              <div class="col-md-4">
-                <label class="form-label">Código</label>
-                <input type="text" class="form-control" value="{{ producto.codigo }}" disabled>
-              </div>
-              <div class="col-md-8">
-                <label for="nombre" class="form-label">Nombre <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="nombre" name="nombre" value="{{ producto.nombre }}" required>
-              </div>
-              <div class="col-md-12">
-                <label for="descripcion" class="form-label">Descripción</label>
-                <textarea class="form-control" id="descripcion" name="descripcion" rows="3">{{ producto.descripcion }}</textarea>
-              </div>
-              <div class="col-md-6">
-                <label for="categoria" class="form-label">Categoría</label>
-                <input type="text" class="form-control" id="categoria" name="categoria" value="{{ producto.categoria }}">
-              </div>
-              <div class="col-md-6">
-                <label for="serial" class="form-label">Serial / Lote</label>
-                <input type="text" class="form-control" id="serial" name="serial" value="{{ producto.serial }}">
-              </div>
-              <div class="col-md-4">
-                <label for="cantidad" class="form-label">Cantidad <span class="text-danger">*</span></label>
-                <input type="number" class="form-control" id="cantidad" name="cantidad" value="{{ producto.cantidad }}" min="0" required>
-              </div>
-              <div class="col-md-4">
-                <label for="costo_unitario" class="form-label">Costo Unitario <span class="text-danger">*</span></label>
-                <div class="input-group">
-                  <span class="input-group-text">$</span>
-                  <input type="number" class="form-control" id="costo_unitario" name="costo_unitario" step="0.01" value="{{ producto.costo_unitario }}" required>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <label for="estado" class="form-label">Estado <span class="text-danger">*</span></label>
-                <select class="form-select" id="estado" name="estado" required>
-                  <option value="disponible" {% if producto.estado == 'disponible' %}selected{% endif %}>Disponible</option>
-                  <option value="prestado" {% if producto.estado == 'prestado' %}selected{% endif %}>Prestado</option>
-                  <option value="dañado" {% if producto.estado == 'dañado' %}selected{% endif %}>Dañado</option>
-                </select>
-              </div>
-            </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Referencia</label>
+            <input type="text" name="referencia" class="form-control" value="{{ producto.referencia or '' }}" placeholder="Referencia comercial">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Código Interno</label>
+            <input type="text" name="codigo_interno" class="form-control" value="{{ producto.codigo_interno or '' }}" placeholder="Código interno">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Código Equipo</label>
+            <input type="text" name="codigo_equipo" class="form-control" value="{{ producto.codigo_equipo or '' }}" placeholder="Código del equipo">
+          </div>
+
+          <!-- Información general -->
+          <div class="col-12 mt-2"><h6 class="text-muted">📦 Información General</h6><hr class="mt-1"></div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Nombre <span class="text-danger">*</span></label>
+            <input type="text" name="nombre" class="form-control" value="{{ producto.nombre }}" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Categoría</label>
+            <input type="text" name="categoria" class="form-control" value="{{ producto.categoria or '' }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Serial</label>
+            <input type="text" name="serial" class="form-control" value="{{ producto.serial or '' }}">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold">Descripción</label>
+            <textarea name="descripcion" class="form-control" rows="3">{{ producto.descripcion or '' }}</textarea>
+          </div>
+
+          <!-- Stock y costos -->
+          <div class="col-12 mt-2"><h6 class="text-muted">💰 Stock y Costos</h6><hr class="mt-1"></div>
+
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Cantidad</label>
+            <input type="number" name="cantidad" class="form-control" value="{{ producto.cantidad }}" min="0">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Costo Unitario ($)</label>
+            <input type="number" name="costo_unitario" class="form-control" step="0.01" min="0" value="{{ producto.costo_unitario }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Estado</label>
+            <select name="estado" class="form-select">
+              <option value="disponible" {% if producto.estado == 'disponible' %}selected{% endif %}>✅ Disponible</option>
+              <option value="prestado" {% if producto.estado == 'prestado' %}selected{% endif %}>🔄 Prestado</option>
+              <option value="dañado" {% if producto.estado == 'dañado' %}selected{% endif %}>❌ Dañado</option>
+            </select>
           </div>
         </div>
 
-        <div class="d-flex justify-content-between mb-5">
-          <a href="{{ url_for('inventario.listar_inventario') }}" class="btn btn-secondary btn-lg">✖️ Cancelar</a>
-          <button type="submit" class="btn btn-warning btn-lg">💾 Guardar Cambios</button>
+        <div class="d-flex justify-content-end mt-4 gap-2">
+          <a href="{{ url_for('inventario.listar_inventario') }}" class="btn btn-secondary">Cancelar</a>
+          <button type="submit" class="btn btn-warning btn-lg">💾 Actualizar Producto</button>
         </div>
       </form>
     </div>
