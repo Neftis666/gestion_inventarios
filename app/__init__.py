@@ -16,7 +16,6 @@ def get_database_uri():
     # Railway Postgres (recomendado)
     database_url = os.getenv('DATABASE_URL')
     if database_url:
-        # Railway Postgres ya viene listo
         print(f"🔗 Usando DATABASE_URL (Postgres)")
         return database_url
     
@@ -44,11 +43,9 @@ def create_app():
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     
-    # 🔥 CAMBIO PRINCIPAL: Usa la función get_database_uri()
     app.config['SQLALCHEMY_DATABASE_URI'] = get_database_uri()
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
-    # Configuración adicional para producción
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'pool_pre_ping': True,
         'pool_recycle': 300,
@@ -119,12 +116,19 @@ def create_app():
         except ImportError as e:
             print(f"⚠️ Modelos de usuarios y roles no encontrados: {e}")
         
-        # 📦 SISTEMA DE CÓDIGOS DE BARRAS: Importar modelos
+        # 📦 SISTEMA DE CÓDIGOS DE BARRAS
         try:
             from app.models import product_model
             print("✅ Modelo de productos con códigos de barras cargado")
         except ImportError as e:
             print(f"⚠️ Modelo de productos con códigos de barras no encontrado: {e}")
+
+        # ✅ NUEVO: Modelo de proveedores
+        try:
+            from app.models import proveedor_model
+            print("✅ Modelo de proveedores cargado")
+        except ImportError as e:
+            print(f"⚠️ Modelo de proveedores no encontrado: {e}")
 
         # ==============================
         # 📂 Registrar Blueprints (rutas)
@@ -147,7 +151,7 @@ def create_app():
         app.register_blueprint(reportes_bp)
         app.register_blueprint(ordenes_bp)
         
-        # 📦 SISTEMA DE CÓDIGOS DE BARRAS: Registrar blueprint
+        # 📦 SISTEMA DE CÓDIGOS DE BARRAS
         try:
             from app.routes.barcode_routes import barcode_bp
             app.register_blueprint(barcode_bp)
@@ -155,13 +159,21 @@ def create_app():
         except ImportError as e:
             print(f"⚠️ Blueprint de códigos de barras no encontrado: {e}")
 
-        # 🆕 GESTIÓN DE USUARIOS: Registrar blueprint
+        # 🆕 GESTIÓN DE USUARIOS
         try:
             from app.routes.user_management_routes import users_bp
             app.register_blueprint(users_bp)
             print("✅ Blueprint de gestión de usuarios registrado en /usuarios")
         except ImportError as e:
             print(f"⚠️ Blueprint de gestión de usuarios no encontrado: {e}")
+
+        # ✅ NUEVO: Módulo de Proveedores
+        try:
+            from app.routes.proveedores_routes import proveedores_bp
+            app.register_blueprint(proveedores_bp)
+            print("✅ Blueprint de proveedores registrado en /proveedores")
+        except ImportError as e:
+            print(f"⚠️ Blueprint de proveedores no encontrado: {e}")
 
         # Crear tablas en caso de que no existan
         try:
