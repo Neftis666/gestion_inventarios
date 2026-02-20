@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2>✏️ Editar Proveedor</h2>
+      <p class="text-muted">Modificar datos de: <strong>{{ proveedor.nombre }}</strong></p>
+    </div>
+    <a href="{{ url_for('proveedores.listar_proveedores') }}" class="btn btn-secondary">← Volver</a>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-header bg-warning">
+      <h5 class="mb-0">📋 Datos del Proveedor</h5>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('proveedores.editar_proveedor', id=proveedor.id) }}">
+        <div class="row g-3">
+          <!-- Información básica -->
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Nombre / Razón Social <span class="text-danger">*</span></label>
+            <input type="text" name="nombre" class="form-control" value="{{ proveedor.nombre }}" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">NIT / Identificación</label>
+            <input type="text" name="nit" class="form-control" value="{{ proveedor.nit or '' }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Tipo</label>
+            <select name="tipo" class="form-select">
+              <option value="Nacional" {% if proveedor.tipo == 'Nacional' %}selected{% endif %}>🇨🇴 Nacional</option>
+              <option value="Internacional" {% if proveedor.tipo == 'Internacional' %}selected{% endif %}>🌐 Internacional</option>
+            </select>
+          </div>
+
+          <!-- Contacto -->
+          <div class="col-12"><hr><h6 class="text-muted">📞 Información de Contacto</h6></div>
+          <div class="col-md-6">
+            <label class="form-label">Dirección</label>
+            <input type="text" name="direccion" class="form-control" value="{{ proveedor.direccion or '' }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Teléfono</label>
+            <input type="text" name="telefono" class="form-control" value="{{ proveedor.telefono or '' }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" value="{{ proveedor.email or '' }}">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Nombre del Contacto</label>
+            <input type="text" name="contacto_nombre" class="form-control" value="{{ proveedor.contacto_nombre or '' }}">
+          </div>
+
+          <!-- Estado -->
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Estado</label>
+            <select name="estado" class="form-select">
+              <option value="activo" {% if proveedor.estado == 'activo' %}selected{% endif %}>✅ Activo</option>
+              <option value="inactivo" {% if proveedor.estado == 'inactivo' %}selected{% endif %}>❌ Inactivo</option>
+            </select>
+          </div>
+
+          <!-- Observaciones -->
+          <div class="col-12"><hr><h6 class="text-muted">📝 Observaciones</h6></div>
+          <div class="col-12">
+            <textarea name="observaciones" class="form-control" rows="3">{{ proveedor.observaciones or '' }}</textarea>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end mt-4 gap-2">
+          <a href="{{ url_for('proveedores.listar_proveedores') }}" class="btn btn-secondary">Cancelar</a>
+          <button type="submit" class="btn btn-warning btn-lg">💾 Actualizar Proveedor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
